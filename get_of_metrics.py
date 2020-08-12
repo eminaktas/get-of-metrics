@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from datetime import datetime
 from time import sleep
 from re import finditer
@@ -17,8 +19,8 @@ DELAY_TIME = "delay_time"
 def parse_args():
     parent_parser = argparse.ArgumentParser(add_help=False)
     parent_parser.add_argument("-d", dest=DIRECTORY, required=True, help="<Required> Enter a directory to save the "
-                                                                          "file if not it saves the files in the "
-                                                                          "same directory where script placed",
+                                                                         "file if not it saves the files in the "
+                                                                         "same directory where script placed",
                                type=str)
     parent_parser.add_argument("-t", dest=DELAY_TIME, required=False, help="<Optional> Enter a delay time. Every time "
                                                                            "it waits for the next scraping. Default "
@@ -235,4 +237,4 @@ if __name__ == "__main__":
             if 'Thread' == k.__class__.__name__:
                 number_of_run = number_of_run + 1
         print('%s connection has been established out of %s' % (number_of_run, thread_len))
-        sleep(60)
+        sleep(5)
