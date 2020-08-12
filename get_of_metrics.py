@@ -6,6 +6,9 @@ from re import finditer
 import argparse
 import paramiko
 import threading
+import logging
+from systemd.journal import JournalHandler
+
 
 ALIAS = "alias_name"
 HOST = "host_ip"
@@ -58,6 +61,9 @@ class GetMetrics:
         self.directory = directory
         self.delay_time = delay_time
         self.ssh = paramiko.SSHClient()
+        self.log = logging.getLogger(ip)
+        self.log.addHandler(JournalHandler())
+        self.log.setLevel(logging.INFO)
 
     # connect function, to establish connection and reconnection. If in the first connection, an error occurs script
     # will stop running. If the connection lost while script running. It tries to reconnect with 60 seconds intervals.
@@ -70,14 +76,14 @@ class GetMetrics:
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.ip, username=self.user_name, password=self.user_password)
-            print("Connected to %s" % self.ip)
+            self.log.info("Connected to %s" % self.ip)
         except paramiko.AuthenticationException:
             connect_error_msg1 = 'Connect Error: Failed to connect'
             connect_error_msg2 = 'due to wrong username/password'
-            print("Failed to connect to %s due to wrong username/password" % self.ip)
+            self.log.info("Failed to connect to %s due to wrong username/password" % self.ip)
             status_code = 1
         except Exception as e:
-            print('Not connected to %s' % self.ip)
+            self.log.info('Not connected to %s' % self.ip)
             connect_error_msg1 = 'Connect Error:'
             connect_error_msg2 = str(e)
             if set_connect == 1:
@@ -163,12 +169,12 @@ class GetMetrics:
                 else:
                     prom_file.write('%s{node_name="%s",device="%s"} %s\n' % (key, self.alias_name, port, value))
         except FileNotFoundError:
-            print("The directory doesn't exist: %s" % self.directory)
+            self.log.info("The directory doesn't exist: %s" % self.directory)
             connect_error_msg1 = "Parse Error: The directory doesn't exist: %s." % self.directory
             connect_error_msg2 = "It must be already created and should be pointed to Node Exporter"
             status_code = 1
         except PermissionError:
-            print("The user doesn't have the permission to interfere the filesystem")
+            self.log.info("The user doesn't have the permission to interfere the filesystem")
             connect_error_msg1 = "The user doesn't have the permission to interfere the filesystem"
             connect_error_msg2 = ""
             status_code = 2
@@ -205,12 +211,15 @@ class GetMetrics:
                 else:
                     pass
             else:
-                print("Server is down. Reconnecting...")
+                self.log.info("Server is down. Reconnecting...")
                 self.connect(0)
 
 
 # the main function to execute the all the function in the exact order and checks the connection and output
 if __name__ == "__main__":
+    log_connection = logging.getLogger('Connection Info')
+    log_connection.addHandler(JournalHandler())
+    log_connection.setLevel(logging.INFO)
     _alias = None
     _host = None
     _user = None
@@ -236,5 +245,5 @@ if __name__ == "__main__":
         for k in threading.enumerate():
             if 'Thread' == k.__class__.__name__:
                 number_of_run = number_of_run + 1
-        print('%s connection has been established out of %s' % (number_of_run, thread_len))
-        sleep(5)
+        log_connection.info('%s connection has been established out of %s' % (number_of_run, thread_len))
+        sleep(600)
