@@ -14,12 +14,13 @@ Detailed documentation can be found at documentation.docx
 
 Python 3.7 and above need to be installed.
 
-argparse, paramiko, datetime and time libraries are used in this script. argparse, datetime and time are the standart libraries paramiko need to be installed.
+argparse, paramiko, systemd, re, threading, datetime and time libraries are used in this script. argparse, re, threading, datetime and time are the standart libraries. paramiko and systemd need to be installed.
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install 
 
 ```bash
 pip install paramiko
+pip install systemd
 ```
 
 ## Usage
@@ -30,3 +31,71 @@ Must be entered the alias_name, host_ip, user_name, user_password and directory_
 pyhton3 get_of_metrics.py -a *host_name1* *host_name2* ... -i *host_ip1* *host_ip2* ... -u *user_name1* -u *user_name2* ... -p *user_password1* *user_password2* ... -d *directory_path* -t *time(in seconds)*
 ```
 
+## Required commands and information for creation and installation dpkg/apt
+
+Creating and copying required files and folders for installation
+
+```bash
+sudo mkdir ./get_of_metrics
+sudo mkdir ./DEBIAN
+sudo mkdir ./usr
+sudo mkdir ./usr/bin
+sudo mkdir ./var
+sudo mkdir ./var/log
+sudo mkdir ./var/log/get_of_metrics
+sudo cp get_of_metrics.py ./usr/bin
+```
+
+The contents of the files are available in the ./get_of_metrics/DEBIAN folder.
+
+```bash
+sudo vi ./get_of_metrics/DEBIAN/preinst
+sudo vi ./get_of_metrics/DEBIAN/prerm
+sudo vi ./get_of_metrics/DEBIAN/postinst
+sudo vi ./get_of_metrics/DEBIAN/control
+```
+
+It regulates the privileges of created preinst, prerm and postinst files. If it is not edited, it may fail while creating .deb.
+
+```bash
+sudo chmod 775 ./get_of_metrics/DEBIAN/preinst
+sudo chmod 775 ./get_of_metrics/DEBIAN/prerm
+sudo chmod 775 ./get_of_metrics/DEBIAN/postinst
+```
+
+Creates a deb file for installation.
+
+```bash
+dpkg-deb --build get_of_metrics
+```
+
+"get_of_metrics.deb" file already provided.
+Performs installation.
+
+```bash 
+sudo apt install ./get_of_metrics.deb
+```
+
+Performs uninstallation.
+
+```bash
+sudo apt remove get-of-metrics
+```
+
+Tracking the life cycle of get_of_metrics service
+
+```bash
+sudo systemctl status get_of_metrics
+```
+
+Clears recorded logs.
+
+```bash
+sudo journalctl --vacuum-time=2d
+```
+
+Access to logs. -u access to our daemon log entries. We say to show us the entries from the last boot with -b.
+
+```bash
+journalctl -b -u get_of_metrics
+```
