@@ -3,62 +3,26 @@
 from datetime import datetime
 from time import sleep
 from re import finditer
-import argparse
+from systemd.journal import JournalHandler
 import paramiko
 import threading
 import logging
-from systemd.journal import JournalHandler
+import json
 
-
-ALIAS = "alias_name"
-HOST = "host_ip"
-USER_NAME = "user_name"
-USER_PASSWORD = "user_password"
-DIRECTORY = "directory_path"
-DELAY_TIME = "delay_time"
-
-
-# parse_args function allows us to control the script and get the parameters in commandline
-def parse_args():
-    parent_parser = argparse.ArgumentParser(add_help=False)
-    parent_parser.add_argument("-d", dest=DIRECTORY, required=True, help="<Required> Enter a directory to save the "
-                                                                         "file if not it saves the files in the "
-                                                                         "same directory where script placed",
-                               type=str)
-    parent_parser.add_argument("-t", dest=DELAY_TIME, required=False, help="<Optional> Enter a delay time. Every time "
-                                                                           "it waits for the next scraping. Default "
-                                                                           "value is 4.9 seconds ",
-                               default=4.9, type=float)
-    argument_parser = argparse.ArgumentParser(
-        description="This Python script enables to scrape and parse the scaled data from Broadcom switches for "
-                    "Prometheus and Node Exporter. Based on github.com/Broadcom-Switch/of-dpa. "
-                    "Saves the files as _*alias_name*_.prom and in specified directory or if not "
-                    "specified the directory, the same directory where the script placed. "
-                    "Host Name, Host HOST, Username and User Password must be entered to run the script "
-                    "It has a time delay to wait for the next scraping and default delay is 4.9 seconds "
-                    "The directory must be created before the script run. Because Node Exporter will read the "
-                    "directory you defined in the Node Exporter config file.", parents=[parent_parser])
-    argument_parser.add_argument("-a", dest=ALIAS, required=True, help="<Required> Enter a alias name",
-                                 type=str, nargs='+')
-    argument_parser.add_argument("-i", dest=HOST, required=True, help="<Required> Enter a host ip or host name",
-                                 type=str, nargs='+')
-    argument_parser.add_argument("-u", dest=USER_NAME, required=True, help="<Required> Enter the root username",
-                                 type=str, nargs='+')
-    argument_parser.add_argument("-p", dest=USER_PASSWORD, required=True,
-                                 help="<Required> Enter the user password",
-                                 type=str, nargs='+')
-
-    args = vars(argument_parser.parse_args())
-    return args
+ALIAS = "alias"
+HOST = "host"
+USER_NAME = "user"
+USER_PASSWORD = "password"
+DELAY_TIME = "delay"
 
 
 class GetMetrics:
-    def __init__(self, alias_name, ip, user_name, user_password, directory, delay_time):
+    def __init__(self, alias_name, ip, user_name, user_password, delay_time):
         self.alias_name = alias_name
         self.ip = ip
         self.user_name = user_name
         self.user_password = user_password
-        self.directory = directory
+        self.directory = '../get_of_metrics/promfiles/'
         self.delay_time = delay_time
         self.ssh = paramiko.SSHClient()
         self.log = logging.getLogger(ip)
@@ -220,22 +184,18 @@ if __name__ == "__main__":
     log_connection = logging.getLogger('Connection Info')
     log_connection.addHandler(JournalHandler())
     log_connection.setLevel(logging.INFO)
-    _alias = None
-    _host = None
-    _user = None
-    _psw = None
-    _direct = None
-    _time = None
-    connection_list = parse_args()
-    thread_len = len(connection_list[ALIAS])
-    for j in range(thread_len):
-        _alias = connection_list[ALIAS][j]
-        _host = connection_list[HOST][j]
-        _user = connection_list[USER_NAME][j]
-        _psw = connection_list[USER_PASSWORD][j]
-        _direct = connection_list[DIRECTORY]
-        _time = connection_list[DELAY_TIME]
-        c = GetMetrics(_alias, _host, _user, _psw, _direct, _time)
+    HOSTS = 'hosts'
+    with open('./get_of_metrics/connection_parameters.json', 'r+') as jsonfile:
+        connection_objects = json.load(jsonfile)
+    _time = float(connection_objects[DELAY_TIME])
+    connection_list = connection_objects[HOSTS]
+    thread_len = len(connection_list)
+    for j in connection_list:
+        _alias = j[ALIAS]
+        _host = j[HOST]
+        _user = j[USER_NAME]
+        _psw = j[USER_PASSWORD]
+        c = GetMetrics(_alias, _host, _user, _psw, _time)
         thread = threading.Thread(name=('%s(%s)' % (_alias, _host)), target=c.execute)
         thread.start()
     sleep(60)
