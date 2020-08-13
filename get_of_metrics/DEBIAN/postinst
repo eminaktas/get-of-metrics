@@ -1,0 +1,3 @@
+sudo systemctl enable get_of_metrics
+sudo systemctl start get_of_metrics
+systemctl is-active --quiet get_of_metrics && echo "Service is enabled, and running. You can see the logs with [journalctl -b -u get_of_metrics]"

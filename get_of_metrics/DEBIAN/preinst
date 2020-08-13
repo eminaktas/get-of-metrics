@@ -1,0 +1,84 @@
+#!/bin/bash
+# To get the parameters from user during installation
+
+is_continue="y"
+
+while [ $is_continue == "y" ]
+do
+  valid_input="y"
+  alias_all=""
+  ip_all=""
+  username_all=""
+  userpswr_all=""
+  delay_time=""
+  while [ $is_continue == "y" ]
+  do
+      read -p "Enter parameters for remote host [alias_name host_name/ip username password]: " alias_name ip username userpswr
+      if [[ -z "$alias_name" ]] || [[ -z "$ip" ]] || [[ -z "$username" ]] || [[ -z "$userpswr" ]];
+      then
+        echo "Parameters are not optional,you must enter all parameters"
+      else
+        alias_all="$alias_all $alias_name"
+        ip_all="$ip_all $ip"
+        username_all="$username_all $username"
+        userpswr_all="$userpswr_all $userpswr"
+        while [ $valid_input == "y" ]
+          do
+            read -p "Do you wish to add another remote host? [y/n]: " is_continue
+            case "$is_continue" in 
+              y|Y ) valid_input="n" break;;
+              n|N ) valid_input="n" break;;
+              * ) valid_input="y"; echo "Invalid input";;
+            esac
+        done
+      fi
+  done
+
+  valid_input="y"
+
+  while [ $valid_input == "y" ]
+  do
+    read -p "Enter the directory path [directory_path]: " directory_path 
+    if [[ ! -z "$directory_path" ]];
+    then
+      valid_input="n"
+    fi
+  done
+
+  valid_input="y"
+
+  read -p "Enter the delay time which is optional. You can press enter without giving parameter. [delay_time]: " delay_time_input
+  if [[ ! -z "$delay_time_input" ]];
+  then
+    delay_time="-t $delay_time_input"  
+  fi
+
+  echo "------------------------------"
+
+  service_text="[Unit]
+Description=get_of_metrics service. You can check with [sudo systemctl status get_of_metrics] every 10 minutes, if the hosts are still connected. If not please check the error logs at /var/log/get_of_metrics.	
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+ExecStart=/usr/bin/python3 /usr/bin/get_of_metrics.py -a$alias_all -i$ip_all -u$username_all -p$userpswr_all -d $directory_path $delay_time
+
+[Install]
+WantedBy=multi-user.target"
+
+  echo "$service_text"
+  echo "------------------------------"
+  while [ $valid_input == "y" ]
+  do
+    read -p "To start installation [y], To restart installation [n] or you can exit the installation [e]: " choice
+    case "$choice" in 
+      y|Y ) echo "Installation has been started"; echo "$service_text" > /etc/systemd/system/get_of_metrics.service; is_continue="n"; valid_input="n" break;;
+      n|N ) is_continue="y"; valid_input="n"; echo "Installation has been restarted"; break;;
+      e|E ) echo "Installation has been canceled"; exit 1;;
+      * ) echo "Invalid input";;
+    esac
+  done
+done
+exit 0
