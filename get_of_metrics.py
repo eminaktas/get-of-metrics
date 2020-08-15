@@ -22,7 +22,7 @@ class GetMetrics:
         self.ip = ip
         self.user_name = user_name
         self.user_password = user_password
-        self.directory = '../get_of_metrics/promfiles/'
+        self.directory = '/home/get-of-metrics/prom-files/'
         self.delay_time = delay_time
         self.ssh = paramiko.SSHClient()
         self.log = logging.getLogger(ip)
@@ -156,7 +156,7 @@ class GetMetrics:
     def save_log(self, err_msg1, err_msg2):
         error_log_file = None
         try:
-            error_log_file = open('/var/log/get_of_metrics/errors_%s.log' % self.alias_name, 'a+')
+            error_log_file = open('/var/log/get-of-metrics/errors_%s.log' % self.alias_name, 'a+')
             error_log_file.write('%s %s %s\n' % (str(datetime.now()), err_msg1, err_msg2))
         finally:
             error_log_file.close()
@@ -185,7 +185,7 @@ if __name__ == "__main__":
     log_connection.addHandler(JournalHandler())
     log_connection.setLevel(logging.INFO)
     HOSTS = 'hosts'
-    with open('./get_of_metrics/connection_parameters.json', 'r+') as jsonfile:
+    with open('/home/get-of-metrics/connection-parameters.json', 'r+') as jsonfile:
         connection_objects = json.load(jsonfile)
     _time = float(connection_objects[DELAY_TIME])
     connection_list = connection_objects[HOSTS]
