@@ -27,7 +27,7 @@ if __name__ == "__main__":
         connection_objects = json.load(json_file)
         json_file.close()
     # Start up the server to expose the metrics.
-    start_http_server(connection_objects[PORT])
+    start_http_server(int(connection_objects[PORT]))
     _time = float(connection_objects[DELAY_TIME])
     connection_list = connection_objects[HOSTS]
     thread_len = len(connection_list)
