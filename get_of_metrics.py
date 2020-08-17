@@ -25,6 +25,7 @@ if __name__ == "__main__":
     log_connection.setLevel(logging.INFO)
     with open('/home/get-of-metrics/connection-parameters.json', 'r+') as json_file:
         connection_objects = json.load(json_file)
+        json_file.close()
     # Start up the server to expose the metrics.
     start_http_server(connection_objects[PORT])
     _time = float(connection_objects[DELAY_TIME])

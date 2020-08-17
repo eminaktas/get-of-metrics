@@ -1,23 +1,6 @@
 from re import finditer
-from prometheus_client.core import GaugeMetricFamily, Summary
+from prometheus_client.core import GaugeMetricFamily
 import getmetrics
-import time
-
-RX_PACKETS = 'rx_packets'
-TX_PACKETS = 'tx_packets'
-RX_BYTES = 'rx_bytes'
-TX_BYTES = 'tx_bytes'
-RX_ERRORS = 'rx_errors'
-TX_ERRORS = 'tx_errors'
-RX_DROPS = 'rx_drops'
-TX_DROPS = 'tx_drops'
-RX_FRAME_ERR = 'rx_frame_err'
-RX_OVER_ERR = 'rx_over_err'
-RX_CRC_ERR = 'rx_crc_err'
-COLLISIONS = 'collisions'
-DEFINITION = 'Custom metrics'
-LABEL_NODE_NAME = 'node_name'
-LABEL_DEVICE = 'device'
 
 
 # Regex (Regular Expression) allows us to find and group the parts of the content that meet certain rules.
