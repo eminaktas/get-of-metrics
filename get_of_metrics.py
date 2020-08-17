@@ -6,14 +6,268 @@ from re import finditer
 from systemd.journal import JournalHandler
 import paramiko
 import threading
-import logging
 import json
+from prometheus_client import start_http_server
+from prometheus_client.core import GaugeMetricFamily, REGISTRY
 
+data = ''
 ALIAS = "alias"
 HOST = "host"
 USER_NAME = "user"
 USER_PASSWORD = "password"
 DELAY_TIME = "delay"
+
+
+class RxPacket(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_packets|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_packets', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_packets':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class TxPacket(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=tx_packets|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('tx_packets', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'tx_packets':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class RxBytes(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_bytes|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_bytes', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_bytes':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class TxBytes(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=tx_bytes|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('tx_bytes', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'tx_bytes':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class RxErrors(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_errors|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_errors', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_errors':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class TxErrors(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=tx_errors|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('tx_errors', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'tx_errors':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class RxDrops(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_drops|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_drops', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_drops':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class TxDrops(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=tx_drops|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('tx_drops', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'tx_drops':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class RxFrameErrors(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_frame_err|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_frame_err', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_frame_err':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class RxOverErrors(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_over_err|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_over_err', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_over_err':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class RxCrcErrors(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=rx_crc_err|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('rx_crc_err', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'rx_crc_err':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
+
+
+class Collisions(object):
+    def __init__(self, alias_name):
+        self.alias_name = alias_name
+
+    def collect(self):
+        regex = r"\s(?=collisions|index)(\w+)\s=\s([\w.]+)"
+        matches = finditer(regex, data)
+        port = 'port'
+        metric = GaugeMetricFamily('collisions', 'Custom metrics', labels=['node_name', 'device'])
+        for match in matches:
+            key = match.group(1)
+            value = match.group(2)
+            # if true, it will update the index value
+            if key == 'index':
+                port = 'port%s' % value
+            # otherwise, it writes the metrics in the .prom file
+            elif key == 'collisions':
+                metric.add_metric([self.alias_name, port], value)
+        yield metric
 
 
 class GetMetrics:
@@ -22,7 +276,6 @@ class GetMetrics:
         self.ip = ip
         self.user_name = user_name
         self.user_password = user_password
-        self.directory = '/home/get-of-metrics/prom-files/'
         self.delay_time = delay_time
         self.ssh = paramiko.SSHClient()
         self.log = logging.getLogger(ip)
@@ -60,7 +313,7 @@ class GetMetrics:
                 self.save_log(connect_error_msg1, connect_error_msg2)
                 exit(status_code)
 
-    # collect function, executing the shellcode and extracting the output
+    # collect function, executing the shell code and extracting the output
     def collect(self, set_connect):
         SHELL_CODE = 'client_port_table_dump --stats'
         try:
@@ -87,71 +340,6 @@ class GetMetrics:
             self.save_log(connect_error_msg1, connect_error_msg2)
             self.connect(set_connect)
 
-    # parse function, to parse the output and save parsed output in .prom file
-    def parse(self, data):
-        connect_error_msg1 = None
-        connect_error_msg2 = None
-        status_code = False
-        prom_file = 0
-        try:
-            prom_file = open('%s_%s_.prom' % (self.directory, self.alias_name), 'w+')
-            # HELP is important to be able to see the metrics on the node_exporter's metric page.
-            prom_file.write('# HELP rx_packets reads the metrics from files\n'
-                            '# HELP tx_packets reads the metrics from files\n'
-                            '# HELP rx_bytes reads the metrics from files\n'
-                            '# HELP tx_bytes reads the metrics from files\n'
-                            '# HELP rx_errors reads the metrics from files\n'
-                            '# HELP tx_errors reads the metrics from files\n'
-                            '# HELP rx_drops reads the metrics from file\n'
-                            '# HELP tx_drops reads the metrics from file\n'
-                            '# HELP rx_frame_err reads the metrics from file\n'
-                            '# HELP rx_over_err reads the metrics from file\n'
-                            '# HELP rx_crc_err reads the metrics from file\n'
-                            '# HELP collisions reads the metrics from file\n')
-            # Regex (Regular Expression) allows us to find and group the parts of the content that meet certain rules.
-            # The finditer in the re library scans left-to-right, and matches are returned in the order found
-            # As a result, key and value are obtained with match.group(1) and match.group(2).
-            # Also, finditer saves time and memory. To see how the regex expression reacts to the .prom file content
-            # check the link : regex101.com/r/biJY82/3
-            # This regex expression finds "key = value" strings and groups them.
-            # "[]" matches a single character present in the set such [\w. ].
-            # "\w" matches any word character (equal to [a-zA-Z0-9_]).
-            # "+" matches between one and unlimited times, as many times as possible, giving back as needed (greedy).
-            # "\s" matches any whitespace character (equal to [\r\n\t\f\v ]).
-            # (?!word|word|..) does not match the words in the set.
-            regex = r"\s(?!mac|config|state|speed)(\w+)\s=\s([\w.]+)"
-            matches = finditer(regex, data)
-            port = 'port'
-            # parses the data key is for metric name and value is the metric value
-            for match in matches:
-                key = match.group(1)
-                value = match.group(2)
-                # if true, it will update the index value
-                if key == 'index':
-                    port = 'port%s' % value
-                # otherwise, it writes the metrics in the .prom file
-                else:
-                    prom_file.write('%s{node_name="%s",device="%s"} %s\n' % (key, self.alias_name, port, value))
-        except FileNotFoundError:
-            self.log.info("The directory doesn't exist: %s" % self.directory)
-            connect_error_msg1 = "Parse Error: The directory doesn't exist: %s." % self.directory
-            connect_error_msg2 = "It must be already created and should be pointed to Node Exporter"
-            status_code = 1
-        except PermissionError:
-            self.log.info("The user doesn't have the permission to interfere the filesystem")
-            connect_error_msg1 = "The user doesn't have the permission to interfere the filesystem"
-            connect_error_msg2 = ""
-            status_code = 2
-        except Exception as e:
-            connect_error_msg1 = 'Parse Error:'
-            connect_error_msg2 = str(e)
-            status_code = 3
-        finally:
-            prom_file.close()
-            if status_code != 0:
-                self.save_log(connect_error_msg1, connect_error_msg2)
-                exit(status_code)
-
     # save_log, to record the error that occurs in the functions
     def save_log(self, err_msg1, err_msg2):
         error_log_file = None
@@ -163,17 +351,27 @@ class GetMetrics:
 
     # execute function to execute the all the function in the exact order and checks the connection and output
     def execute(self):
+        global data
         self.connect(1)
         while 1:
             # checks if the connection is alive if not tries to reconnect
             if self.ssh.get_transport().is_active():
-                output_data = self.collect(1)
-                # double check for the output_data if it is empty or not
-                if output_data is not None:
-                    self.parse(output_data)
-                    sleep(self.delay_time)
-                else:
-                    pass
+                # registers the metrics constantly and
+                REGISTRY.register(RxPacket(self.alias_name))
+                REGISTRY.register(TxPacket(self.alias_name))
+                REGISTRY.register(RxBytes(self.alias_name))
+                REGISTRY.register(TxBytes(self.alias_name))
+                REGISTRY.register(RxErrors(self.alias_name))
+                REGISTRY.register(TxErrors(self.alias_name))
+                REGISTRY.register(RxDrops(self.alias_name))
+                REGISTRY.register(TxDrops(self.alias_name))
+                REGISTRY.register(RxFrameErrors(self.alias_name))
+                REGISTRY.register(RxOverErrors(self.alias_name))
+                REGISTRY.register(RxCrcErrors(self.alias_name))
+                REGISTRY.register(Collisions(self.alias_name))
+                while True:
+                    data = self.collect(1)
+                    sleep(1)
             else:
                 self.log.info("Server is down. Reconnecting...")
                 self.connect(0)
@@ -181,29 +379,28 @@ class GetMetrics:
 
 # the main function to execute the all the function in the exact order and checks the connection and output
 if __name__ == "__main__":
+    # Start up the server to expose the metrics.
+    start_http_server(8000)
     log_connection = logging.getLogger('Connection Info')
     log_connection.addHandler(JournalHandler())
     log_connection.setLevel(logging.INFO)
-    HOSTS = 'hosts'
-    with open('/home/get-of-metrics/connection-parameters.json', 'r+') as jsonfile:
-        connection_objects = json.load(jsonfile)
-    _time = float(connection_objects[DELAY_TIME])
-    connection_list = connection_objects[HOSTS]
-    thread_len = len(connection_list)
-    for j in connection_list:
+    with open('/home/get-of-metrics/connection-parameters.json', 'r+') as json_file:
+        connection_objects = json.load(json_file)
+    thread_len = len(connection_objects)
+    for j in connection_objects:
         _alias = j[ALIAS]
         _host = j[HOST]
         _user = j[USER_NAME]
         _psw = j[USER_PASSWORD]
         c = GetMetrics(_alias, _host, _user, _psw, _time)
-        thread = threading.Thread(name=('%s(%s)' % (_alias, _host)), target=c.execute)
+        thread = threading.Thread(name=('%s(%s)' % (_alias, _host)), target=c.execute())
         thread.start()
     sleep(60)
     number_of_run = 0
-    while 1:
-        number_of_run = 0
+    while True:
+        number_of_thread = 0
         for k in threading.enumerate():
             if 'Thread' == k.__class__.__name__:
                 number_of_run = number_of_run + 1
-        log_connection.info('%s connection has been established out of %s' % (number_of_run, thread_len))
-        sleep(600)
+        log_connection.info('%s connection has been established out of %s' % (number_of_thread, thread_len))
+        sleep(6000)
