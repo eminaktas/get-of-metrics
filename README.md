@@ -86,41 +86,6 @@ apt remove get-of-metrics
 
 Required parameters to introduce machines in the setup. Use `connection-parameters.json` file to intruduce the remote machines and the delay time.
 
-(for ULAK Haberlesme)
-
-```bash
-{
-	"port": "8000",
-	"delay": "5",
-	"hosts":
-	[
-		{
-			"alias": "Leaf-1",
-			"host": "10.10.0.31",
-			"user": "root",
-			"password": "onl"
-		},
-		{
-			"alias": "Leaf-2",
-			"host": "10.10.0.32",
-			"user": "root",
-			"password": "onl"
-		},
-		{
-			"alias": "Leaf-3",
-			"host": "10.10.0.33",
-			"user": "root",
-			"password": "onl"
-		},
-		{
-			"alias": "Leaf-4",
-			"host": "10.10.0.34",
-			"user": "root",
-			"password": "onl"
-		}
-	]
-}
-```
 Step - 2 Docker
 
 Dockerfile is provided in the file named `Dockerfile`. By using the docker file you can make create the docker image.
