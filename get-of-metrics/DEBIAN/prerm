@@ -1,0 +1,3 @@
+sudo systemctl stop get_of_metrics
+sudo systemctl disable get_of_metrics
+echo "Service is disabled and service file has been removed"

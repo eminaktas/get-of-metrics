@@ -1,20 +1,20 @@
-# get_of_metrics.py
+# get-of-metrics.py
 
-Get of Metrics for Prometheus, Node Exporter and Grafana
+Get of Metrics for Prometheus and Grafana
 
 ## Overview
 
-get_of_metrics is a Python script for dealing the Broadcom switch metrics to extract from commandline, parse the metrics and create a *.prom file to be processed by Node Exporter, Prometheus and Grafana.
+get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract the metrics from command line, parse the metrics and create a *.prom file for metrics to be processed by Node Exporter, Prometheus. Finally, visualize the metrics with Grafana.
 
 ## Documentation
 
-Detailed documentation can be found at documentation.docx
+Detailed installation can be found at installation.docx
 
 ## Installation
 
 Python 3.7 and above need to be installed.
 
-argparse, paramiko, systemd, re, threading, datetime and time libraries are used in this script. argparse, re, threading, datetime and time are the standart libraries. paramiko and systemd need to be installed.
+paramiko and systemd need to be installed.
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install 
 
@@ -25,77 +25,144 @@ pip install systemd
 
 ## Usage
 
-Must be entered the alias_name, host_ip, user_name, user_password and directory_path in order to run the script. delay_time is optional but if not defined its default value is 4.9 seconds assuming the Node Exporter scrape time interval is 5 seconds. directory_path and time are common for all connections
-
-```bash
-pyhton3 get_of_metrics.py -a *host_name1* *host_name2* ... -i *host_ip1* *host_ip2* ... -u *user_name1* -u *user_name2* ... -p *user_password1* *user_password2* ... -d *directory_path* -t *time(in seconds)*
-```
-
 ## Required commands and information for creation and installation dpkg/apt
+
+Step - 1 dpkg/apt
 
 Creating and copying required files and folders for installation
 
 ```bash
-sudo mkdir ./get_of_metrics
-sudo mkdir ./DEBIAN
-sudo mkdir ./usr
-sudo mkdir ./usr/bin
-sudo mkdir ./var
-sudo mkdir ./var/log
-sudo mkdir ./var/log/get_of_metrics
-sudo cp get_of_metrics.py ./usr/bin
+mkdir ./get-of-metrics
+mkdir ./get-of-metrics/DEBIAN
+mkdir ./get-of-metrics/usr
+mkdir ./get-of-metrics/usr/bin
+mkdir ./get-of-metrics/usr/bin/get-of-metrics
+mkdir ./get-of-metrics/etc
+mkdir ./get-of-metrics/etc/systemd
+mkdir ./get-of-metrics/etc/systemd/system
+mkdir ./get-of-metrics/home/get-of-metrics
+mkdir ./get-of-metrics/home/get-of-metrics/prom-files
+mkdir ./get-of-metrics/var
+mkdir ./get-of-metrics/var/log
+mkdir ./get-of-metrics/var/log/get-of-metrics
+cp ./get-of-metrics.py ./get-of-metrics/usr/bin/get-of-metrics
+cp ./familyofmetrics.py ./get-of-metrics/usr/bin/get-of-metrics
+cp ./getmetrics.py ./get-of-metrics/usr/bin/get-of-metrics
 ```
 
-The contents of the files are available in the ./get_of_metrics/DEBIAN folder.
+The contents of the files are available in the ./get-of-metrics/DEBIAN folder and ./get-of-metrics/etc/systemd/systemd/get-of-metrics.service.
 
 ```bash
-sudo vi ./get_of_metrics/DEBIAN/preinst
-sudo vi ./get_of_metrics/DEBIAN/prerm
-sudo vi ./get_of_metrics/DEBIAN/postinst
-sudo vi ./get_of_metrics/DEBIAN/control
+vi ./get-of-metrics/etc/systemd/systemd/get-of-metrics.service
+vi ./get-of-metrics/DEBIAN/prerm
+vi ./get-of-metrics/DEBIAN/control
 ```
 
-It regulates the privileges of created preinst, prerm and postinst files. If it is not edited, it may fail while creating .deb.
+Regulates the privileges of created prerm. If it is not edited, it may fail while creating .deb.
 
 ```bash
-sudo chmod 775 ./get_of_metrics/DEBIAN/preinst
-sudo chmod 775 ./get_of_metrics/DEBIAN/prerm
-sudo chmod 775 ./get_of_metrics/DEBIAN/postinst
+chmod 775 ./get-of-metrics/DEBIAN/prerm
 ```
 
 Creates a deb file for installation.
 
 ```bash
-dpkg-deb --build get_of_metrics
+dpkg-deb --build get-of-metrics
 ```
 
-"get_of_metrics.deb" file already provided.
+"get-of-metrics.deb" file already provided. So you don't have to go through all the steps above.
+
 Performs installation.
 
 ```bash 
-sudo apt install ./get_of_metrics.deb
+apt install ./get-of-metrics.deb
 ```
 
 Performs uninstallation.
 
 ```bash
-sudo apt remove get-of-metrics
+apt remove get-of-metrics
 ```
 
-Tracking the life cycle of get_of_metrics service
+Required parameters to introduce machines in the setup. Use `connection-parameters.json` file to intruduce the remote machines and the delay time.
+
+(for ULAK Haberlesme)
 
 ```bash
-sudo systemctl status get_of_metrics
+{
+	"port": "8000",
+	"delay": "5",
+	"hosts":
+	[
+		{
+			"alias": "Leaf-1",
+			"host": "10.10.0.31",
+			"user": "root",
+			"password": "onl"
+		},
+		{
+			"alias": "Leaf-2",
+			"host": "10.10.0.32",
+			"user": "root",
+			"password": "onl"
+		},
+		{
+			"alias": "Leaf-3",
+			"host": "10.10.0.33",
+			"user": "root",
+			"password": "onl"
+		},
+		{
+			"alias": "Leaf-4",
+			"host": "10.10.0.34",
+			"user": "root",
+			"password": "onl"
+		}
+	]
+}
+```
+Step - 2 Docker
+
+Dockerfile is provided in the file named `Dockerfile`. By using the docker file you can make create the docker image.
+
+Builds the docker image. 
+
+```bash
+docker build -t get-of-metrics .
+```
+Runs the image.
+`-d` runs as a deamon.
+`--name` names the script.
+`--privileged` gives access to all deviced. Needed to activate the service in conatiner otherwise it does not work.
+`-v` in order to save, access and modify the datas.
+`-p` expose the port to the port number on the left.
+At the last of the command we give the image name which is `get-of-metrics`
+
+```bash
+docker run -d --name get-of-metrics --privileged -p 8000:8000 -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v file:/home/get-of-metrics -v logs:/var/log/get-of-metrics -v prom-files:/home/get-of-metrics/prom-files get-of-metrics
 ```
 
-Clears recorded logs.
+Getting acces to container
 
 ```bash
-sudo journalctl --vacuum-time=2d
+docker exec -it get-of-metrics bash
+```
+Useful control mechanisim for the script in the container.
+
+Tracking the life cycle of get-of-metrics service
+
+```bash
+systemctl status get-of-metrics
 ```
 
-Access to logs. -u access to our daemon log entries. We say to show us the entries from the last boot with -b.
+Clears recorded logs. 
 
 ```bash
-journalctl -b -u get_of_metrics
+journalctl --vacuum-time=2d
+```
+
+Access to logs. -u access to our daemon log entries. -b shows us the entries from the last boot.
+
+```bash
+journalctl -b -u get-of-metrics
 ```
