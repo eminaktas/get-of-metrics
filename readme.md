@@ -1,14 +1,12 @@
 # get-of-metrics.py
 
-Get of Metrics for Prometheus and Grafana
+Get of Metrics version 3
 
 ## Overview
 
-get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract the metrics from command line, parse the metrics and create a *.prom file for metrics to be processed by Node Exporter, Prometheus. Finally, visualize the metrics with Grafana.
+get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract from commandline, parse the metrics and expose them to be processed by Prometheus and Grafana.
 
-## Documentation
-
-Detailed installation can be found at installation.docx
+This version works as an Prometheus Exporter.
 
 ## Installation
 
@@ -104,7 +102,7 @@ Runs the image.
 At the last of the command we give the image name which is `get-of-metrics`
 
 ```bash
-docker run -d --name get-of-metrics --privileged -p 8000:8000 -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v file:/home/get-of-metrics -v logs:/var/log/get-of-metrics -v prom-files:/home/get-of-metrics/prom-files get-of-metrics
+docker run -d --name get-of-metrics --privileged -p 8000:8000 -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v ./file:/home/get-of-metrics -v ./logs:/var/log/get-of-metrics -v ./prom-files:/home/get-of-metrics/prom-files get-of-metrics
 ```
 
 Getting acces to container

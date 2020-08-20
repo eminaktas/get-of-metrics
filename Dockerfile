@@ -34,10 +34,6 @@ RUN `#Fixing permission error for volume`                                       
                                                                                                \
      chown -R 1000:1000 /etc/systemd/system/get-of-metrics.service
 
-VOLUME [ "/sys/fs/cgroup" ]
-VOLUME [ "/home/get-of-metrics" ]
-VOLUME [ "/var/log/get-of-metrics" ]
-
 RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /etc/systemd/system/*.wants/* \
     /lib/systemd/system/local-fs.target.wants/* \
@@ -46,16 +42,13 @@ RUN rm -f /lib/systemd/system/multi-user.target.wants/* \
     /lib/systemd/system/sysinit.target.wants/systemd-tmpfiles-setup* \
     /lib/systemd/system/systemd-update-utmp*
 
+VOLUME [ "/sys/fs/cgroup" ]
+VOLUME [ "/home/get-of-metrics" ]
+VOLUME [ "/var/log/get-of-metrics" ]
+
 ENTRYPOINT ["/lib/systemd/systemd"]
 
-
-CMD  `#Enabling the systemd`                                                    && \
-     /lib/systemd/systemd                                                       && \
-                                                                                \
-     `#Enabling the service`                                                    && \
-     systemctl enable get-of-metrics                                            && \
-                                                                                \
-     `#Starting the service`                                                    && \
-     systemctl start get-of-Metrics
+RUN `#Enabling the service`                && \
+     systemctl enable get-of-metrics
      
 EXPOSE 8000
