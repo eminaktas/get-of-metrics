@@ -5,10 +5,9 @@ from systemd.journal import JournalHandler
 import threading
 import json
 from prometheus_client import start_http_server
-import getmetrics
+import collector_of_metrics
 import logging
 
-data = ""
 ALIAS = "alias"
 HOST = "host"
 HOSTS = "hosts"
@@ -16,7 +15,6 @@ USER_NAME = "user"
 USER_PASSWORD = "password"
 DELAY_TIME = "delay"
 PORT = "port"
-
 
 # the main function to execute the all the function in the exact order and checks the connection and output
 if __name__ == "__main__":
@@ -36,8 +34,8 @@ if __name__ == "__main__":
         _host = j[HOST]
         _user = j[USER_NAME]
         _psw = j[USER_PASSWORD]
-        c = getmetrics.GetMetrics(_alias, _host, _user, _psw, _time)
-        thread = threading.Thread(name=('%s(%s)' % (_alias, _host)), target=c.execute())
+        c = collector_of_metrics.GetMetrics(_alias, _host, _user, _psw, _time)
+        thread = threading.Thread(name=('%s(%s)' % (_alias, _host)), target=c.execute)
         thread.start()
     sleep(60)
     number_of_run = 0
