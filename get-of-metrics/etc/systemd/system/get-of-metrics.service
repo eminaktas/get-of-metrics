@@ -1,0 +1,12 @@
+[Unit]
+Description=get-of-metrics service. You can check the service status with [systemctl status get-of-metrics], if the hosts are still connected. If not please check the error logs at /var/log/get-of-metrics.	
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+ExecStart=/usr/bin/python3 /usr/bin/get-of-metrics.py
+
+[Install]
+WantedBy=multi-user.target

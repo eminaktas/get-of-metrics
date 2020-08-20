@@ -1,4 +1,3 @@
 systemctl stop get_of_metrics
 systemctl disable get_of_metrics
-rm /etc/systemd/system/get_of_metrics.service
 echo "Service is disabled and service file has been removed"

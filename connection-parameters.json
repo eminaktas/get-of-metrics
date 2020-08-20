@@ -1,0 +1,24 @@
+{
+	"delay": "5",
+	"hosts":
+	[
+		{
+			"alias": "alias-name-1",
+			"host": "host",
+			"user": "user",
+			"password": "pswr"
+		},
+		{
+			"alias": "alias-name-2",
+			"host": "host",
+			"user": "user",
+			"password": "pswr"
+		},
+		{
+			"alias": "alias-name-3",
+			"host": "host",
+			"user": "user",
+			"password": "pswr"
+		}
+	]
+}
