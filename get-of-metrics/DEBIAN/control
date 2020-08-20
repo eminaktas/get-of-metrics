@@ -1,9 +1,9 @@
 Package: get-of-metrics
-Version: 3.0.0
+Version: 1.0.0
 Architecture: all
 Maintainer: Emin AKTAS<eminaktas34@gmail.com>
 Depends: python3, python3-paramiko, python3-systemd
 Section: extras
 Priority: optional
 Homepage: github.com/eminaktas
-Description: get_of_metrics is a Python script for dealing the Broadcom switch metrics to extract from commandline, parse the metrics and create a *.prom file to be processed by Node Exporter, Prometheus and Grafana.
+Description: get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract from commandline, parse the metrics and create a *.prom file to be processed by Node Exporter, Prometheus and Grafana.
