@@ -6,13 +6,9 @@ Get of Metrics version 2
 
 get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract the metrics from command line, parse the metrics and create a *.prom file for metrics to be processed by Node Exporter, Prometheus. Finally, visualize the metrics with Grafana.
 
-Within this version, created Docker image for only script.
+This version include automated  installation for Node Exporter, Prometheus and Grafana installation within Dockerfile.
 
-## Documentation
-
-Detailed installation can be found at installation.docx
-
-## Installation
+## Installation for script
 
 Python 3.7 and above need to be installed.
 
@@ -24,8 +20,6 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install
 pip install paramiko
 pip install systemd
 ```
-
-## Usage
 
 ## Required commands and information for creation and installation dpkg/apt
 
@@ -95,6 +89,7 @@ Builds the docker image.
 ```bash
 docker build -t get-of-metrics .
 ```
+
 Runs the image.
 `-d` runs as a deamon.
 `--name` names the script.
