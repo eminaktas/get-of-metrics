@@ -3,9 +3,8 @@ Description=Node Exporter
 After=network.target
 
 [Service]
-User=prometheus
 Type=simple
-ExecStart=/usr/local/bin/node_exporter --collector.textfile.directory="/home/get-of-metrics/prom-files"
+ExecStart=/usr/local/bin/node_exporter
 
 [Install]
 WantedBy=multi-user.target

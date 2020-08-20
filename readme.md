@@ -6,9 +6,13 @@ Get of Metrics version 2
 
 get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract the metrics from command line, parse the metrics and create a *.prom file for metrics to be processed by Node Exporter, Prometheus. Finally, visualize the metrics with Grafana.
 
-This version include automated  installation for Node Exporter, Prometheus and Grafana installation within Dockerfile.
+In this version, used Docker Compose to run Node Exporter, Prometheus, Grafana and the script.
 
-## Installation for script
+## Documentation
+
+Detailed installation can be found at installation.docx
+
+## Installation
 
 Python 3.7 and above need to be installed.
 
@@ -20,6 +24,8 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install
 pip install paramiko
 pip install systemd
 ```
+
+## Usage
 
 ## Required commands and information for creation and installation dpkg/apt
 
@@ -79,49 +85,22 @@ apt remove get-of-metrics
 
 Required parameters to introduce machines in the setup. Use "connection-parameters.json" file to intruduce the remote machines and the delay time.
 
-## Docker Image
+## Docker Compose
 Step - 2 `Docker`
 
-Dockerfile is provided in the file named `Dockerfile`. By using the docker file you can make create the docker image.
+Docker Compose is provided in the file named `docker-compose.yml`.
 
-Builds the docker image. 
+Builds and runs the docker compose. 
 
 ```bash
-docker build -t get-of-metrics .
+docker-compose -f 
 ```
 
-Runs the image.
-`-d` runs as a deamon.
-`--name` names the script.
-`--privileged` gives access to all deviced. Needed to activate the service in conatiner otherwise it does not work.
-`-v` in order to save, access and modify the datas.
-At the last of the command we give the image name which is `get-of-metrics`
+Getting acces to containers
 
 ```bash
-docker run -d --name get-of-metrics --privileged -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v ./file:/home/get-of-metrics -v ./logs:/var/log/get-of-metrics -v ./prom-files:/home/get-of-metrics/prom-files get-of-metrics
-```
-
-Getting acces to container
-
-```bash
-docker exec -it get-of-metrics bash
-```
-Useful control mechanisim for the script in the container.
-
-Tracking the life cycle of get-of-metrics service
-
-```bash
-systemctl status get-of-metrics
-```
-
-Clears recorded logs. 
-
-```bash
-journalctl --vacuum-time=2d
-```
-
-Access to logs. -u access to our daemon log entries. -b shows us the entries from the last boot.
-
-```bash
-journalctl -b -u get-of-metrics
+docker exec -it custom-metrics sh
+docker exec -it grafana sh
+docker exec -it prometheus sh
+docker exec -it node-exporter sh
 ```
