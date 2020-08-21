@@ -1,0 +1,53 @@
+version: '3'
+# network ismini belirler. Belirtilmezse bulunduğu klasör ismini alır. 
+# : sonrasıda tipini belirtir.
+# birden fazla network kullanılabilir.
+networks:
+    custom-metrics-monitoring:
+
+services:
+    prometheus:
+        # kullanmak istediğimiz image belirtilir.
+        image: prom/prometheus:v2.20.1
+        container_name: prometheus
+        # ./prometheus.yml alıp /etc/prometheus/prometheus.yml kopyalar
+        volumes:
+            - ./prometheus.yml:/etc/prometheus/prometheus.yml
+        # yml dosyasının adresini config eder.
+        # command ile servis komutlarını kullanabiliriz
+        command:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+        # portu dışarıya açar.
+        ports:
+            - "9090:9090"
+        # ayağa kalkacak network ismi belirtilir.
+        networks:
+            - custom-metrics-monitoring
+    
+    grafana:
+        image: grafana/grafana:7.1.3
+        container_name: grafana
+        # admin kullanıcı için şifre
+        environment:
+            - GF_SECURITY_ADMIN_PASSWORD=admin
+        # Prometheus ayaklanmadan grafana ayağa kalmamasını söyler.
+        depends_on:
+            - prometheus
+        ports:
+            - "3000:3000"
+        networks:
+            - custom-metrics-monitoring
+    
+    custom-metrics:
+        build: ./
+        container_name: custom-metrics
+        # privileged modda çalışmasını söyler.
+        privileged: true
+        volumes:
+            - ./connection-parameters.json:/home/get-of-metrics/connection-parameters.json
+            - /sys/fs/cgroup:/sys/fs/cgroup:ro
+            - ./logs:/var/log/get-of-metrics
+        ports: 
+            - "8000:8000"
+        networks:
+            - custom-metrics-monitoring
