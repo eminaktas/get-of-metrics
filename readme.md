@@ -6,30 +6,48 @@ Get of Metrics version 2
 
 get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract the metrics from command line, parse the metrics and create a *.prom file for metrics to be processed by Node Exporter, Prometheus. Finally, visualize the metrics with Grafana.
 
-In this version, used Docker Compose to run Node Exporter, Prometheus, Grafana and the script.
+This version include automated installation for Python script, Node Exporter, Prometheus and Grafana within Docker Compose.
 
-## Documentation
-
-Detailed installation can be found at installation.docx
+Required parameters to introduce machines in the setup. Use "connection-parameters.json" file to intruduce the remote machines and the delay time.
 
 ## Installation
 
-Python 3.7 and above need to be installed.
+Docker Compose file is provided in the file named `docker-compose.yml`.
 
-paramiko and systemd need to be installed.
-
-Use the package manager [pip](https://pip.pypa.io/en/stable/) to install 
+Builds the docker containers as a package. 
 
 ```bash
-pip install paramiko
-pip install systemd
+docker-compose -f docker-compose.yml up
 ```
 
-## Usage
+Getting acces to container
 
-## Required commands and information for creation and installation dpkg/apt
+```bash
+docker exec -it custom-metrics sh
+docker exec -it grafana sh
+docker exec -it prometheus sh
+docker exec -it node-exporter sh
+```
 
-Step - 1 `dpkg/apt`
+Tracking the life cycle of get-of-metrics service
+
+```bash
+systemctl status get-of-metrics
+```
+
+Clears recorded logs. 
+
+```bash
+journalctl --vacuum-time=2d
+```
+
+Access to logs. -u access to our daemon log entries. -b shows us the entries from the last boot.
+
+```bash
+journalctl -b -u get-of-metrics
+```
+
+## Required commands and information for creation and installation dpkg/apt (Note: get-of-metrics.deb package is already provided in the files)
 
 Creating and copying required files and folders for installation
 
@@ -67,40 +85,4 @@ Creates a deb file for installation.
 
 ```bash
 dpkg-deb --build get-of-metrics
-```
-
-"get-of-metrics.deb" file already provided. So you don't have to go through all the steps above.
-
-Performs installation.
-
-```bash 
-apt install ./get-of-metrics.deb
-```
-
-Performs uninstallation.
-
-```bash
-apt remove get-of-metrics
-```
-
-Required parameters to introduce machines in the setup. Use "connection-parameters.json" file to intruduce the remote machines and the delay time.
-
-## Docker Compose
-Step - 2 `Docker`
-
-Docker Compose is provided in the file named `docker-compose.yml`.
-
-Builds and runs the docker compose. 
-
-```bash
-docker-compose -f 
-```
-
-Getting acces to containers
-
-```bash
-docker exec -it custom-metrics sh
-docker exec -it grafana sh
-docker exec -it prometheus sh
-docker exec -it node-exporter sh
 ```
