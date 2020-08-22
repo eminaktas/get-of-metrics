@@ -87,8 +87,6 @@ journalctl -b -u get-of-metrics
 
 ## Required commands and information for creation and installation dpkg/apt
 
-Step - 1 `dpkg/apt`
-
 Creating and copying required files and folders for installation
 
 ```bash
