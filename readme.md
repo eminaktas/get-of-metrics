@@ -57,8 +57,6 @@ journalctl -b -u get-of-metrics
 
 ## Required commands and information for creation and installation dpkg/apt (Note: get-of-metrics.deb package is already provided in the files)
 
-Step - 1 `dpkg/apt`
-
 Creating and copying required files and folders for installation
 
 ```bash
