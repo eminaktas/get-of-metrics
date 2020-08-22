@@ -22,6 +22,7 @@ Use the package manager [pip](https://pip.pypa.io/en/stable/) to install
 pip install paramiko
 pip install systemd
 ```
+If you install with .deb (which is already provided) package it will install all Python packages by itself.
 
 ## Usage
 
@@ -31,45 +32,6 @@ Must be entered the alias_name, host_ip, user_name, user_password and directory_
 pyhton3 get_of_metrics.py -a *host_name1* *host_name2* ... -i *host_ip1* *host_ip2* ... -u *user_name1* -u *user_name2* ... -p *user_password1* *user_password2* ... -d *directory_path* -t *time(in seconds)*
 ```
 
-## Required commands and information for creation and installation dpkg/apt (Note: .deb package is already provided in the files (get-of-metrics.deb))
-
-Creating and copying required files and folders for installation
-
-```bash
-sudo mkdir ./get-of-metrics
-sudo mkdir ./DEBIAN
-sudo mkdir ./usr
-sudo mkdir ./usr/bin
-sudo mkdir ./var
-sudo mkdir ./var/log
-sudo mkdir ./var/log/get-of-metrics
-sudo cp get-of-metrics.py ./usr/bin
-```
-
-The contents of the files are available in the ./get-of-metrics/DEBIAN folder.
-
-```bash
-sudo vi ./get-of-metrics/DEBIAN/preinst
-sudo vi ./get-of-metrics/DEBIAN/prerm
-sudo vi ./get-of-metrics/DEBIAN/postinst
-sudo vi ./get-of-metrics/DEBIAN/control
-```
-
-It regulates the privileges of created preinst, prerm and postinst files. If it is not edited, it may fail while creating .deb.
-
-```bash
-sudo chmod 775 ./get-of-metrics/DEBIAN/preinst
-sudo chmod 775 ./get-of-metrics/DEBIAN/prerm
-sudo chmod 775 ./get-of-metrics/DEBIAN/postinst
-```
-
-Creates a deb file for installation.
-
-```bash
-dpkg-deb --build get-of-metrics
-```
-
-"get-of-metrics.deb" file already provided.
 Performs installation.
 
 ```bash 
@@ -106,4 +68,42 @@ Access to logs. -u access to our daemon log entries. We say to show us the entri
 
 ```bash
 journalctl -b -u get-of-metrics
+```
+
+## Required commands and information for creation dpkg/apt
+
+Creating and copying required files and folders for installation
+
+```bash
+sudo mkdir ./get-of-metrics
+sudo mkdir ./DEBIAN
+sudo mkdir ./usr
+sudo mkdir ./usr/bin
+sudo mkdir ./var
+sudo mkdir ./var/log
+sudo mkdir ./var/log/get-of-metrics
+sudo cp get-of-metrics.py ./usr/bin
+```
+
+The contents of the files are available in the ./get-of-metrics/DEBIAN folder.
+
+```bash
+sudo vi ./get-of-metrics/DEBIAN/preinst
+sudo vi ./get-of-metrics/DEBIAN/prerm
+sudo vi ./get-of-metrics/DEBIAN/postinst
+sudo vi ./get-of-metrics/DEBIAN/control
+```
+
+It regulates the privileges of created preinst, prerm and postinst files. If it is not edited, it may fail while creating .deb.
+
+```bash
+sudo chmod 775 ./get-of-metrics/DEBIAN/preinst
+sudo chmod 775 ./get-of-metrics/DEBIAN/prerm
+sudo chmod 775 ./get-of-metrics/DEBIAN/postinst
+```
+
+Creates a deb file for installation.
+
+```bash
+dpkg-deb --build get-of-metrics
 ```
