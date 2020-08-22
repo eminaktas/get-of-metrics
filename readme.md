@@ -31,7 +31,7 @@ Must be entered the alias_name, host_ip, user_name, user_password and directory_
 pyhton3 get_of_metrics.py -a *host_name1* *host_name2* ... -i *host_ip1* *host_ip2* ... -u *user_name1* -u *user_name2* ... -p *user_password1* *user_password2* ... -d *directory_path* -t *time(in seconds)*
 ```
 
-## Required commands and information for creation and installation dpkg/apt
+## Required commands and information for creation and installation dpkg/apt (Note: .deb package is already provided in the files (get-of-metrics.deb))
 
 Creating and copying required files and folders for installation
 
