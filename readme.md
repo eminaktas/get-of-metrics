@@ -54,7 +54,7 @@ Runs the image.
 At the last of the command we give the image name which is `get-of-metrics`
 
 ```bash
-docker run -d --name get-of-metrics --privileged -p 8000:8000 -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v ./file:/home/get-of-metrics -v ./logs:/var/log/get-of-metrics -v get-of-metrics
+docker run -d --name get-of-metrics --privileged -p 8000:8000 -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v ./file:/home/get-of-metrics -v ./logs:/var/log/get-of-metrics get-of-metrics
 ```
 
 Getting acces to container
