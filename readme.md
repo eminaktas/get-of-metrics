@@ -8,6 +8,8 @@ get-of-metrics is a Python script for dealing the Broadcom switch metrics to ext
 
 This version includes Dockerfile installation and only script installation.
 
+Required parameters to introduce machines in the setup. Use "connection-parameters.json" file to intruduce the remote machines and the delay time.
+
 ## Documentation
 
 Detailed installation documentation for Node Exporter, Prometheus and Grafana can be found at documentation.docx
@@ -37,8 +39,6 @@ Performs uninstallation.
 ```bash
 apt remove get-of-metrics
 ```
-
-Required parameters to introduce machines in the setup. Use "connection-parameters.json" file to intruduce the remote machines and the delay time.
 
 ## Installation with Docker Image
 
