@@ -42,8 +42,6 @@ Required parameters to introduce machines in the setup. Use "connection-paramete
 
 ## Installation with Docker Image
 
-Step - 2 `Docker`
-
 Dockerfile is provided in the file named `Dockerfile`. By using the docker file you can create the docker image.
 
 Builds the docker image. 
