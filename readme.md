@@ -6,7 +6,7 @@ Get of Metrics version 2
 
 get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract the metrics from command line, parse the metrics and create a *.prom file for metrics to be processed by Node Exporter, Prometheus. Finally, visualize the metrics with Grafana.
 
-This version include automated installation for Python script, Node Exporter, Prometheus and Grafana installation within Dockerfile.
+This version include automated installation for Python script, Node Exporter, Prometheus and Grafana within Dockerfile.
 
 Required parameters to introduce machines in the setup. Use "connection-parameters.json" file to intruduce the remote machines and the delay time.
 
