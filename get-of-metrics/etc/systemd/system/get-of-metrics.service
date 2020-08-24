@@ -6,7 +6,7 @@ After=network.target
 Type=simple
 Restart=always
 RestartSec=60
-ExecStart=/usr/bin/python3 /usr/bin/get-of-metrics/get-of-metrics.py
+ExecStart=/usr/bin/python3 /home/get-of-metrics/bin/get-of-metrics.py
 
 [Install]
 WantedBy=multi-user.target

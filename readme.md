@@ -30,12 +30,6 @@ Performs installation.
 apt install ./get-of-metrics.deb
 ```
 
-Performs uninstallation.
-
-```bash
-apt remove get-of-metrics
-```
-
 ## Installation with Dockerfile for only the script
 
 Dockerfile is provided in the file named `Dockerfile`. By using the docker file you can make create the docker image.
@@ -89,16 +83,10 @@ Tracking the life cycle of get-of-metrics service
 systemctl status get-of-metrics
 ```
 
-Clears recorded logs. 
+Performs uninstallation.
 
 ```bash
-journalctl --vacuum-time=2d
-```
-
-Access to logs. -u access to our daemon log entries. -b shows us the entries from the last boot.
-
-```bash
-journalctl -b -u get-of-metrics
+apt remove get-of-metrics
 ```
 
 ## Required commands and information for creation and installation dpkg/apt
@@ -108,19 +96,15 @@ Creating and copying required files and folders for installation
 ```bash
 mkdir ./get-of-metrics
 mkdir ./get-of-metrics/DEBIAN
-mkdir ./get-of-metrics/usr
-mkdir ./get-of-metrics/usr/bin
-mkdir ./get-of-metrics/usr/bin/get-of-metrics
 mkdir ./get-of-metrics/etc
 mkdir ./get-of-metrics/etc/systemd
 mkdir ./get-of-metrics/etc/systemd/system
 mkdir ./get-of-metrics/home/get-of-metrics
+mkdir ./get-of-metrics/home/get-of-metrics/bin
 mkdir ./get-of-metrics/var
 mkdir ./get-of-metrics/var/log
 mkdir ./get-of-metrics/var/log/get-of-metrics
 cp ./get-of-metrics.py ./get-of-metrics/usr/bin/get-of-metrics
-cp ./family_of_metrics.py ./get-of-metrics/usr/bin/get-of-metrics
-cp ./collector_of_metrics.py ./get-of-metrics/usr/bin/get-of-metrics
 ```
 
 The contents of the files are available in the ./get-of-metrics/DEBIAN folder and ./get-of-metrics/etc/systemd/systemd/get-of-metrics.service.
