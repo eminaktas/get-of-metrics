@@ -41,12 +41,9 @@ services:
     custom-metrics:
         build: ./
         container_name: custom-metrics
-        # privileged modda çalışmasını söyler.
-        privileged: true
         volumes:
-            - ./connection-parameters.json:/home/get-of-metrics/connection-parameters.json
-            - /sys/fs/cgroup:/sys/fs/cgroup:ro
-            - ./logs:/var/log/get-of-metrics
+            - ./connection-parameters.json:/get-of-metrics/connection-parameters.json
+            - ./logs:/get-of-metrics/logs
         ports: 
             - "8000:8000"
         networks:

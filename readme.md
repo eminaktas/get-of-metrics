@@ -14,21 +14,37 @@ Required parameters to introduce machines in the setup. Use `connection-paramete
 
 Python 3.7 and above need to be installed.
 
-argparse, paramiko, systemd, re, threading, json, prometheus_client, datetime and time libraries are used in this script. argparse, json, re, threading, datetime and time are the standart libraries. prometheus_client, paramiko and systemd need to be installed.
+paramiko, re, threading, json, prometheus_client and time libraries are used in this script. json, re, threading and time are the standart libraries. prometheus_client, paramiko need to be installed.
 
 Use the package manager [pip](https://pip.pypa.io/en/stable/) to install 
 
 ```bash
 pip install paramiko
-pip install systemd
 pip install prometheus_client
 ```
+
+If you install with .deb package (which is already provided) it will install all Python packages by itself.
 
 Performs installation.
 
 ```bash 
 apt install ./get-of-metrics.deb
 ```
+
+If you install script solely you can use these commends to activate get-of-metrics service. get-of-metrics service file is already provided in the .deb package
+
+Starts the script service
+
+```bash
+systemctl start get-of-metrics
+```
+
+Enables the service runs itself automatically after every reboot.
+
+```bash
+systemctl enables get-of-metrics
+```
+
 
 ## Installation with Dockerfile for only the script
 
@@ -42,13 +58,12 @@ docker build -t get-of-metrics .
 Runs the image.
 `-d` runs as a deamon.
 `--name` names the script.
-`--privileged` gives access to all deviced. Needed to activate the service in conatiner otherwise it does not work.
 `-v` in order to save, access and modify the datas.
 `-p` expose the port to the port number on the left.
 At the last of the command we give the image name which is `get-of-metrics`
 
 ```bash
-docker run -d --name get-of-metrics --privileged -p 8000:8000 -v /sys/fs/cgroup:/sys/fs/cgroup:ro -v ./file:/home/get-of-metrics -v ./logs:/var/log/get-of-metrics get-of-metrics
+docker run -d --name get-of-metrics -p 8000:8000 -v ./connection-parameters.json:/get-of-metrics/connection-parameters.json -v ./logs:/get-of-metrics/logs get-of-metrics
 ```
 
 Getting acces to container
