@@ -31,7 +31,7 @@ Performs installation.
 apt install ./get-of-metrics.deb
 ```
 
-If you install script solely you can use these commends to activate get-of-metrics service. get-of-metrics service file is already provided in the .deb package
+If you install script solely you can use these commends to activate get-of-metrics service. get-of-metrics service file is already provided in the .deb package so while installation it will install the service file so you dont need to be bother yourself to create a service file for the script.
 
 Starts the script service
 
@@ -50,20 +50,20 @@ systemctl enables get-of-metrics
 
 Dockerfile is provided in the file named `Dockerfile`. By using the docker file you can make create the docker image.
 
-Builds the docker image. 
+Builds the docker image locally. It also uploaded in Docker Hub.
 
 ```bash
 docker build -t get-of-metrics .
 ```
-Runs the image.
+Runs the image as a container and pull the image with requeired files from Dockerhub.
 `-d` runs as a deamon.
 `--name` names the script.
-`-v` in order to save, access and modify the datas.
+`-v` in order to have access the files.
 `-p` expose the port to the port number on the left.
-At the last of the command we give the image name which is `get-of-metrics`
+At the last of the command we give the image name which is `eminaktas/get-of-metrics`
 
 ```bash
-docker run -d --name get-of-metrics -p 8000:8000 -v ./connection-parameters.json:/get-of-metrics/connection-parameters.json -v ./logs:/get-of-metrics/logs get-of-metrics
+docker run -d --name get-of-metrics -p 8000:8000 -v ./connection-parameters.json:/get-of-metrics/connection-parameters.json -v ./logs:/get-of-metrics/logs eminaktas/get-of-metrics
 ```
 
 Getting acces to container

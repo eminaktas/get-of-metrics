@@ -29,8 +29,7 @@ services:
             - custom-metrics-monitoring
     
     custom-metrics:
-        build: .
-        image: get-of-metrics:latest
+        image: eminaktas/get-of-metrics:3.0.0
         container_name: custom-metrics
         volumes:
             - ./connection-parameters.json:/get-of-metrics/connection-parameters.json

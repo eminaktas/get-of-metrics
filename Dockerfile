@@ -10,8 +10,9 @@ COPY ./requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./get-of-metrics.py ./ && \
-     ./connection-parameters.json ./
+COPY ./get-of-metrics.py ./
+     
+COPY ./connection-parameters.json ./
 
 VOLUME [ "/get-of-metrics/logs" ]
 
