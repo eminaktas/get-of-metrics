@@ -1,0 +1,10 @@
+[
+  {
+    "labels": {
+      "job": "custom-exporter"
+    },
+    "targets": [
+      "custom-metrics:8000"
+    ]
+  }
+]

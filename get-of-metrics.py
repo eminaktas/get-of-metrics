@@ -69,7 +69,7 @@ class Collector(object):
         # "\w" matches any word character (equal to [a-zA-Z0-9_]).
         # "+" matches between one and unlimited times, as many times as possible, giving back as needed (greedy).
         # "\s" matches any whitespace character (equal to [\r\n\t\f\v ]).
-        # (?=word|word|..) matches the words in the set.
+        # (?!word|word|..) matches the words in the set.
         regex = r"\s(?!mac|config|state|speed)(\w+)\s=\s([\w.]+)"
         matches = finditer(regex, data)
         port = 'port'
@@ -80,7 +80,7 @@ class Collector(object):
                 port = 'port%s' % value
             # otherwise, it writes the metrics in the .prom file
             else:
-                metrics[key].add_metric([port], value)
+                metrics[key].add_metric([port], float(value))
         for _ in metrics:
             yield metrics[_]
 

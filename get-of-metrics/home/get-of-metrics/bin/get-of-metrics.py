@@ -30,7 +30,6 @@ RX_FRAME_ERR = 'rx_frame_err'
 RX_OVER_ERR = 'rx_over_err'
 RX_CRC_ERR = 'rx_crc_err'
 COLLISIONS = 'collisions'
-NODE_NAME = 'node_name'
 DEVICE = 'device'
 DESCRIPTION = 'Custom metrics'
 THREAD_DESCRIPTION = 'Custom metric thread'
@@ -80,7 +79,7 @@ class Collector(object):
                 port = 'port%s' % value
             # otherwise, it writes the metrics in the .prom file
             else:
-                metrics[key].add_metric([port], value)
+                metrics[key].add_metric([port], float(value))
         for _ in metrics:
             yield metrics[_]
 
@@ -159,7 +158,7 @@ class GetMetrics:
     def save_log(self, err_msg1, err_msg2):
         error_log_file = None
         try:
-            error_log_file = open('/get-of-metrics/logs/errors_%s.log' % self.alias_name, 'a+')
+            error_log_file = open('/var/log/get-of-metrics/errors_%s.log' % self.alias_name, 'a+')
             error_log_file.write('%s %s %s\n' % (str(datetime.now()), err_msg1, err_msg2))
         finally:
             error_log_file.close()
@@ -185,7 +184,7 @@ if __name__ == "__main__":
     log_connection = logging.getLogger('Connection Info')
     log_connection.addHandler(logging.StreamHandler())
     log_connection.setLevel(logging.INFO)
-    with open('/get-of-metrics/connection-parameters.json', 'r+') as json_file:
+    with open('/home/get-of-metrics/connection-parameters.json', 'r+') as json_file:
         connection_objects = json.load(json_file)
         json_file.close()
     # Start up the server to expose the metrics.

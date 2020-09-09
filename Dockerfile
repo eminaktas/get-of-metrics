@@ -10,10 +10,11 @@ COPY ./requirements.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt
 
-COPY ./get-of-metrics.py ./
+COPY ./get-of-metrics.py ./ && \
+     ./connection-parameters.json ./
 
-COPY ./connection-parameters.json ./
+VOLUME [ "/get-of-metrics/logs" ]
 
-CMD [ "python", "-u", "./get-of-metrics.py"]
-     
 EXPOSE 8000
+
+CMD [ "python", "./get-of-metrics.py"]
