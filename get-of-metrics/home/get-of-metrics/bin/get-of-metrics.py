@@ -6,7 +6,7 @@ import logging
 import paramiko
 from time import sleep
 from prometheus_client import start_http_server
-from prometheus_client.core import GaugeMetricFamily, REGISTRY
+from prometheus_client.core import REGISTRY, CounterMetricFamily
 from datetime import datetime
 from re import finditer, sub
 
@@ -45,18 +45,18 @@ class Collector(object):
     def collect(self):
         # metric list to be exposed
         metrics = {
-            RX_PACKETS: GaugeMetricFamily('%s_%s' % (RX_PACKETS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_PACKETS: GaugeMetricFamily('%s_%s' % (TX_PACKETS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_BYTES: GaugeMetricFamily('%s_%s' % (RX_BYTES, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_BYTES: GaugeMetricFamily('%s_%s' % (TX_BYTES, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_ERRORS: GaugeMetricFamily('%s_%s' % (RX_ERRORS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_ERRORS: GaugeMetricFamily('%s_%s' % (TX_ERRORS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_DROPS: GaugeMetricFamily('%s_%s' % (RX_DROPS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_DROPS: GaugeMetricFamily('%s_%s' % (TX_DROPS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_FRAME_ERR: GaugeMetricFamily('%s_%s' % (RX_FRAME_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_OVER_ERR: GaugeMetricFamily('%s_%s' % (RX_OVER_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_CRC_ERR: GaugeMetricFamily('%s_%s' % (RX_CRC_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            COLLISIONS: GaugeMetricFamily('%s_%s' % (COLLISIONS, self.node_name), DESCRIPTION, labels=[DEVICE])
+            RX_PACKETS: CounterMetricFamily('%s_%s' % (RX_PACKETS, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            TX_PACKETS: CounterMetricFamily('%s_%s' % (TX_PACKETS, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            RX_BYTES: CounterMetricFamily('%s_%s' % (RX_BYTES, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            TX_BYTES: CounterMetricFamily('%s_%s' % (TX_BYTES, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            RX_ERRORS: CounterMetricFamily('%s_%s' % (RX_ERRORS, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            TX_ERRORS: CounterMetricFamily('%s_%s' % (TX_ERRORS, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            RX_DROPS: CounterMetricFamily('%s_%s' % (RX_DROPS, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            TX_DROPS: CounterMetricFamily('%s_%s' % (TX_DROPS, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            RX_FRAME_ERR: CounterMetricFamily('%s_%s' % (RX_FRAME_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            RX_OVER_ERR: CounterMetricFamily('%s_%s' % (RX_OVER_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            RX_CRC_ERR: CounterMetricFamily('%s_%s' % (RX_CRC_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
+            COLLISIONS: CounterMetricFamily('%s_%s' % (COLLISIONS, self.node_name), DESCRIPTION, labels=[DEVICE])
         }
         # Regex (Regular Expression) allows us to find and group the parts of the content that meet certain rules.
         # The finditer in the re library scans left-to-right, and matches are returned in the order found
@@ -126,6 +126,8 @@ class GetMetrics:
             if status_code != 0:
                 self.save_log(connect_error_msg1, connect_error_msg2)
                 exit(status_code)
+            elif status_code == 0:
+                self.save_log(connect_error_msg1, connect_error_msg2) 
 
     # collect function, executing the shell code and extracting the output
     def collect(self, set_connect):

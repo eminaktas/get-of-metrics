@@ -1,6 +1,13 @@
 version: '3'
 networks:
     custom-metrics-monitoring:
+        driver: bridge
+        driver_opts: 
+            com.docker.network.enable_ipv6: "false"
+        ipam:
+            driver: default
+            config:
+            - subnet: 172.18.0.0/16
 
 services:
     prometheus:
@@ -14,7 +21,8 @@ services:
         ports:
             - "9090:9090"
         networks:
-            - custom-metrics-monitoring
+            custom-metrics-monitoring:
+                ipv4_address: 172.18.0.3
     
     grafana:
         image: grafana/grafana:7.1.3
@@ -26,7 +34,8 @@ services:
         ports:
             - "3000:3000"
         networks:
-            - custom-metrics-monitoring
+            custom-metrics-monitoring:
+                ipv4_address: 172.18.0.4
     
     custom-metrics:
         image: eminaktas/get-of-metrics:3.0.0
@@ -37,4 +46,5 @@ services:
         ports: 
             - "8000:8000"
         networks:
-            - custom-metrics-monitoring
+            custom-metrics-monitoring:
+                ipv4_address: 172.18.0.5
