@@ -1,0 +1,14 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: get-of-metrics
+commonLabels:
+  app.kubernetes.ip/name: custom-metrics
+  app.kubernetes.io/part-of: monitoring
+resources:
+- namespace.yml
+- secret.yml
+- deployment.yml
+- service.yml
+images:
+- name: eminaktas/get-of-metrics
+  newTag: k8s

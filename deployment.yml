@@ -1,0 +1,32 @@
+apiVersion: apps/v1  
+kind: Deployment
+metadata:
+  name: custom-metrics-leaf-1
+  namespace: get-of-metrics
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: scrape-metrics
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 0
+      maxSurge: 1 
+  template:
+    metadata:
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "34553"
+      labels:
+        app: scrape-metrics
+    spec: 
+      containers:
+      - name: get-of-metrics
+        image: eminaktas/get-of-metrics
+        envFrom:
+        - secretRef:
+            name: custom-metrics-creds-leaf-1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080

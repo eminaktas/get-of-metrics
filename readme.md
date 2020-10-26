@@ -1,14 +1,14 @@
 # get-of-metrics.py
 
-Get of Metrics version 3
+Get of Metrics version K8s
 
 ## Overview
 
 get-of-metrics is a Python script for dealing the Broadcom switch metrics to extract from commandline, parse the metrics and expose them to be processed by Prometheus and Grafana.
 
-This version works as a Prometheus Exporter.
+This version of the scipt works as a Prometheus Exporter.
 
-Required parameters to introduce machines in the setup. Use `connection-parameters.json` file to intruduce the remote machines and the delay time.
+Use the secret.yml file to intruduce a remote machine and the delay time.
 
 ## Installation for only the script
 
@@ -44,7 +44,17 @@ Enables the service runs itself automatically after every reboot.
 ```bash
 systemctl enables get-of-metrics
 ```
+## Guide for Grafana, Prometheus and get-of-metrics
 
+`https://medium.com/@eminaktas/kubectl-minikube-prometheus-grafana-and-get-of-metrics-kurulum-ve-%C3%A7al%C4%B1%C5%9Ft%C4%B1r%C4%B1lmas%C4%B1-56c7a1a6293e`
+
+## Installation with Kubernetes for only the script
+
+All the files for Kubernetes are provided. Before executing the code, edit `secret.yml` to introduce the remote machine.
+
+```bash
+kubectl apply -k .
+```
 
 ## Installation with Dockerfile for only the script
 
@@ -63,31 +73,13 @@ Runs the image as a container and pull the image with requeired files from Docke
 At the last of the command we give the image name which is `eminaktas/get-of-metrics`
 
 ```bash
-docker run -d --name get-of-metrics -p 8000:8000 -v ./connection-parameters.json:/get-of-metrics/connection-parameters.json -v ./logs:/get-of-metrics/logs eminaktas/get-of-metrics
+docker run -d --name get-of-metrics -p 8080:8080 -v ./logs:/get-of-metrics/logs -e ALIAS=enter-alias -e HOST=enter-host -e USER=enter-user -e PASSWORD=enter-password -e DELAY=enter-delay(default-1-sec) eminaktas/get-of-metrics:k8s
 ```
 
 Getting acces to container
 
 ```bash
 docker exec -it get-of-metrics bash
-```
-
-## Installation with Docker Compose for Prometheus, Grafana and the script
-
-Docker Compose file is provided in the file named docker-compose.yml.
-
-Builds the docker containers as a package.
-
-```bash
-docker-compose -f docker-compose.yml up
-```
-
-Getting acces to container
-
-```bash
-docker exec -it custom-metrics sh
-docker exec -it grafana sh
-docker exec -it prometheus sh
 ```
 
 ## Extra commands

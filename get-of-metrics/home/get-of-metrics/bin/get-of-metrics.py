@@ -4,6 +4,7 @@ import threading
 import json
 import logging
 import paramiko
+import argparse
 from time import sleep
 from prometheus_client import start_http_server
 from prometheus_client.core import REGISTRY, CounterMetricFamily
@@ -30,33 +31,29 @@ RX_FRAME_ERR = 'rx_frame_err'
 RX_OVER_ERR = 'rx_over_err'
 RX_CRC_ERR = 'rx_crc_err'
 COLLISIONS = 'collisions'
+NODE_NAME = 'node_name'
 DEVICE = 'device'
 DESCRIPTION = 'Custom metrics'
-THREAD_DESCRIPTION = 'Custom metric thread'
-ALLOW = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'
-
 
 class Collector(object):
     def __init__(self, alias_name=''):
         self.alias_name = alias_name
-        # replaces the alias name with '_' for every none allow character.
-        self.node_name = sub('[^%s]' % ALLOW, '_', alias_name).lower()
 
     def collect(self):
         # metric list to be exposed
         metrics = {
-            RX_PACKETS: CounterMetricFamily('%s_%s' % (RX_PACKETS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_PACKETS: CounterMetricFamily('%s_%s' % (TX_PACKETS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_BYTES: CounterMetricFamily('%s_%s' % (RX_BYTES, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_BYTES: CounterMetricFamily('%s_%s' % (TX_BYTES, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_ERRORS: CounterMetricFamily('%s_%s' % (RX_ERRORS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_ERRORS: CounterMetricFamily('%s_%s' % (TX_ERRORS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_DROPS: CounterMetricFamily('%s_%s' % (RX_DROPS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            TX_DROPS: CounterMetricFamily('%s_%s' % (TX_DROPS, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_FRAME_ERR: CounterMetricFamily('%s_%s' % (RX_FRAME_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_OVER_ERR: CounterMetricFamily('%s_%s' % (RX_OVER_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            RX_CRC_ERR: CounterMetricFamily('%s_%s' % (RX_CRC_ERR, self.node_name), DESCRIPTION, labels=[DEVICE]),
-            COLLISIONS: CounterMetricFamily('%s_%s' % (COLLISIONS, self.node_name), DESCRIPTION, labels=[DEVICE])
+            TX_PACKETS: CounterMetricFamily(TX_PACKETS, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_PACKETS: CounterMetricFamily(RX_PACKETS, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_BYTES: CounterMetricFamily(RX_BYTES, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            TX_BYTES: CounterMetricFamily(TX_BYTES, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_ERRORS: CounterMetricFamily(RX_ERRORS, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            TX_ERRORS: CounterMetricFamily(TX_ERRORS, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_DROPS: CounterMetricFamily(RX_DROPS, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            TX_DROPS: CounterMetricFamily(TX_DROPS, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_FRAME_ERR: CounterMetricFamily(RX_FRAME_ERR, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_OVER_ERR: CounterMetricFamily(RX_OVER_ERR, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            RX_CRC_ERR: CounterMetricFamily(RX_CRC_ERR, DESCRIPTION, labels=[NODE_NAME, DEVICE]),
+            COLLISIONS: CounterMetricFamily(COLLISIONS, DESCRIPTION, labels=[NODE_NAME, DEVICE])
         }
         # Regex (Regular Expression) allows us to find and group the parts of the content that meet certain rules.
         # The finditer in the re library scans left-to-right, and matches are returned in the order found
@@ -68,7 +65,7 @@ class Collector(object):
         # "\w" matches any word character (equal to [a-zA-Z0-9_]).
         # "+" matches between one and unlimited times, as many times as possible, giving back as needed (greedy).
         # "\s" matches any whitespace character (equal to [\r\n\t\f\v ]).
-        # (?=word|word|..) matches the words in the set.
+        # (?!word|word|..) matches the words in the set.
         regex = r"\s(?!mac|config|state|speed)(\w+)\s=\s([\w.]+)"
         matches = finditer(regex, data)
         port = 'port'
@@ -79,10 +76,38 @@ class Collector(object):
                 port = 'port%s' % value
             # otherwise, it writes the metrics in the .prom file
             else:
-                metrics[key].add_metric([port], float(value))
+                metrics[key].add_metric([self.alias_name, port], float(value))
         for _ in metrics:
             yield metrics[_]
 
+# parse_args function allows us to control the script and get the parameters in commandline
+def parse_args():
+    parent_parser = argparse.ArgumentParser(add_help=False)
+    parent_parser.add_argument("-t", dest=DELAY_TIME, required=False, help="<Optional> Enter a delay time. Every time "
+                                                                           "it waits for the next scraping. Default "
+                                                                           "value is 5 seconds ",
+                               default=5, type=float)
+    argument_parser = argparse.ArgumentParser(
+        description="This Python script enables to scrape and parse the scaled data from Broadcom switches for "
+                    "Prometheus and Node Exporter. Based on github.com/Broadcom-Switch/of-dpa. "
+                    "Saves the files as _*alias_name*_.prom and in specified directory or if not "
+                    "specified the directory, the same directory where the script placed. "
+                    "Host Name, Host HOST, Username and User Password must be entered to run the script "
+                    "It has a time delay to wait for the next scraping and default delay is 5 seconds "
+                    "The directory must be created before the script run. Because Node Exporter will read the "
+                    "directory you defined in the Node Exporter config file.", parents=[parent_parser])
+    argument_parser.add_argument("-a", dest=ALIAS, required=True, help="<Required> Enter a alias name",
+                                 type=str)
+    argument_parser.add_argument("-i", dest=HOST, required=True, help="<Required> Enter a host ip or host name",
+                                 type=str)
+    argument_parser.add_argument("-u", dest=USER_NAME, required=True, help="<Required> Enter the root username",
+                                 type=str)
+    argument_parser.add_argument("-p", dest=USER_PASSWORD, required=True,
+                                 help="<Required> Enter the user password",
+                                 type=str)
+
+    args = vars(argument_parser.parse_args())
+    return args
 
 class GetMetrics:
     def __init__(self, alias_name, ip, user_name, user_password, delay_time):
@@ -92,7 +117,7 @@ class GetMetrics:
         self.user_password = user_password
         self.delay_time = delay_time
         self.ssh = paramiko.SSHClient()
-        self.log = logging.getLogger(ip)
+        self.log = logging.getLogger(str(ip))
         self.log.addHandler(logging.StreamHandler())
         self.log.setLevel(logging.INFO)
 
@@ -101,33 +126,40 @@ class GetMetrics:
     # set_connect is set to 1 to say this is the first connection. With this way, if connection lost, it will enter
     # the reconnection phase while the script running.
     def connect(self, set_connect):
-        status_code = 0
-        connect_error_msg1 = None
-        connect_error_msg2 = None
+        status_code = 3
         try:
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.ip, username=self.user_name, password=self.user_password)
-            self.log.info("Connected to %s" % self.ip)
         except paramiko.AuthenticationException:
             connect_error_msg1 = 'Connect Error: Failed to connect'
             connect_error_msg2 = 'due to wrong username/password'
             self.log.info("Failed to connect to %s due to wrong username/password" % self.ip)
             status_code = 1
+            self.ssh.close()
         except Exception as e:
             self.log.info('Not connected to %s' % self.ip)
             connect_error_msg1 = 'Connect Error:'
             connect_error_msg2 = str(e)
+            self.ssh.close()
             if set_connect == 1:
-                status_code = 2
+                status_code = 1
             else:
+                status_code = 0
                 connect_error_msg1 = 'Reconnect Error:'
+                self.log.info("Server is down. Reconnecting...")
                 sleep(60)
         finally:
-            if status_code != 0:
+            if status_code == 1:
                 self.save_log(connect_error_msg1, connect_error_msg2)
                 exit(status_code)
-            elif status_code == 0:
+            elif status_code == 0: 
                 self.save_log(connect_error_msg1, connect_error_msg2) 
+            else:
+                if set_connect == 1:
+                    self.log.info("Connected to %s" % self.ip)
+                    self.log.info("Scraping the metrics has been initialized...")
+                elif set_connect == 0:
+                    self.log.info("Reconnected")
 
     # collect function, executing the shell code and extracting the output
     def collect(self, set_connect):
@@ -149,16 +181,16 @@ class GetMetrics:
                 connect_error_msg3 = 'stdOut Return Code: %s' % str(exit_status)
                 self.save_log(connect_error_msg1, connect_error_msg2)
                 self.save_log(connect_error_msg1, connect_error_msg3)
-                pass
         except Exception as e:
             connect_error_msg1 = 'Collect Error:'
             connect_error_msg2 = str(e)
             self.save_log(connect_error_msg1, connect_error_msg2)
-            self.connect(set_connect)
+            self.ssh.close()
+            # if connections losts, it will try to connect    
+            self.connect(0)
 
     # save_log, to record the error that occurs in the functions
     def save_log(self, err_msg1, err_msg2):
-        error_log_file = None
         try:
             error_log_file = open('/var/log/get-of-metrics/errors_%s.log' % self.alias_name, 'a+')
             error_log_file.write('%s %s %s\n' % (str(datetime.now()), err_msg1, err_msg2))
@@ -169,45 +201,16 @@ class GetMetrics:
     def execute(self):
         global data
         self.connect(1)
-        # checks if the connection is alive if not tries to reconnect
-        if self.ssh.get_transport().is_active():
-            # constantly registers the metrics constantly and works in their own threads
-            REGISTRY.register(Collector(self.alias_name))
-            while True:
-                data = self.collect(1)
-                sleep(self.delay_time)
-        else:
-            self.log.info("Server is down. Reconnecting...")
-            self.connect(0)
-
+        # constantly registers the metrics constantly and works in their own threads
+        REGISTRY.register(Collector(self.alias_name))
+        while True:
+            data = self.collect(0)
+            sleep(self.delay_time)
 
 # the main function to execute the all the function in the exact order and checks the connection and output
 if __name__ == "__main__":
-    log_connection = logging.getLogger('Connection Info')
-    log_connection.addHandler(logging.StreamHandler())
-    log_connection.setLevel(logging.INFO)
-    with open('/home/get-of-metrics/connection-parameters.json', 'r+') as json_file:
-        connection_objects = json.load(json_file)
-        json_file.close()
     # Start up the server to expose the metrics.
-    start_http_server(int(connection_objects[PORT]))
-    _time = float(connection_objects[DELAY_TIME])
-    connection_list = connection_objects[HOSTS]
-    thread_len = len(connection_list)
-    for j in connection_list:
-        _alias = j[ALIAS]
-        _host = j[HOST]
-        _user = j[USER_NAME]
-        _psw = j[USER_PASSWORD]
-        c = GetMetrics(_alias, _host, _user, _psw, _time)
-        thread = threading.Thread(name=('%s %s(%s)' % (THREAD_DESCRIPTION, _alias, _host)), target=c.execute)
-        thread.start()
-    log_connection.info('After 60 seconds, it shows a message for number of connection established')
-    sleep(60)
-    while True:
-        number_of_thread = 0
-        for k in threading.enumerate():
-            if k.name.startswith(THREAD_DESCRIPTION):
-                number_of_thread = number_of_thread + 1
-        log_connection.info('%s connection has been established out of %s' % (number_of_thread, thread_len))
-        sleep(1800)
+    start_http_server(8080)
+    connection_list = parse_args()
+    GetMetrics(connection_list[ALIAS], connection_list[HOST], connection_list[USER_NAME], \
+        connection_list[USER_PASSWORD], connection_list[DELAY_TIME]).execute()
