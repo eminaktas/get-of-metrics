@@ -40,7 +40,7 @@ class Collector(object):
         self.alias_name = alias_name
         self.log = logging.getLogger(alias_name)
         self.log.addHandler(logging.StreamHandler())
-        self.log.setLevel(logging.ERROR)
+        self.log.setLevel(logging.INFO)
 
     def collect(self):
         # metric list to be exposed
@@ -135,7 +135,7 @@ class GetMetrics:
         self.ssh = paramiko.SSHClient()
         self.log = logging.getLogger(alias_name)
         self.log.addHandler(logging.StreamHandler())
-        self.log.setLevel(logging.ERROR)
+        self.log.setLevel(logging.INFO)
 
     # connect function, to establish connection and reconnection. If in the first connection, an error occurs script
     # will stop running. If the connection lost while script running. It tries to reconnect with 60 seconds intervals.
