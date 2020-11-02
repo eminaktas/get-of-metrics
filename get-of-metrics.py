@@ -38,6 +38,9 @@ DESCRIPTION = 'Custom metrics'
 class Collector(object):
     def __init__(self, alias_name=''):
         self.alias_name = alias_name
+        self.log = logging.getLogger(alias_name)
+        self.log.addHandler(logging.StreamHandler())
+        self.log.setLevel(logging.ERROR)
 
     def collect(self):
         # metric list to be exposed
@@ -85,6 +88,14 @@ class Collector(object):
         for _ in metrics:
             yield metrics[_]
 
+        # save_log, to record the error that occurs in the functions
+    def save_log(self, err_msg1, err_msg2):
+        try:
+            error_log_file = open('/get-of-metrics/logs/regex_errors_%s.log' % self.alias_name, 'a+')
+            error_log_file.write('%s %s %s\n' % (str(datetime.now()), err_msg1, err_msg2))
+        finally:
+            error_log_file.close()
+
 # parse_args function allows us to control the script and get the parameters in commandline
 def parse_args():
     parent_parser = argparse.ArgumentParser(add_help=False)
@@ -122,9 +133,9 @@ class GetMetrics:
         self.user_password = user_password
         self.delay_time = delay_time
         self.ssh = paramiko.SSHClient()
-        self.log = logging.getLogger(str(ip))
+        self.log = logging.getLogger(alias_name)
         self.log.addHandler(logging.StreamHandler())
-        self.log.setLevel(logging.INFO)
+        self.log.setLevel(logging.ERROR)
 
     # connect function, to establish connection and reconnection. If in the first connection, an error occurs script
     # will stop running. If the connection lost while script running. It tries to reconnect with 60 seconds intervals.
