@@ -67,7 +67,12 @@ class Collector(object):
         # "\s" matches any whitespace character (equal to [\r\n\t\f\v ]).
         # (?!word|word|..) matches the words in the set.
         regex = r"\s(?!mac|config|state|speed)(\w+)\s=\s([\w.]+)"
-        matches = finditer(regex, data)
+        try:
+            matches = finditer(regex, data)
+        except:
+            connect_error_msg1 = 'Regex Error:'
+            self.save_log(connect_error_msg1, data)
+            self.log.info('%s %s' %(connect_error_msg1, data))
         port = 'port'
         for match in matches:
             key = match.group(1)
@@ -165,22 +170,31 @@ class GetMetrics:
     def collect(self, set_connect):
         SHELL_CODE = 'client_port_table_dump --stats'
         try:
-            # the data is in std_out
-            std_in, std_out, std_err = self.ssh.exec_command(SHELL_CODE)
-            exit_status = std_out.channel.recv_exit_status()
-            # if exit_status is 0, it means everything is ok
-            if exit_status == 0:
-                out = ''.join(std_out.readlines())
-                return str(out)
-            # if not, there is a problem.
+            # checks if the session is still active and authenticated
+            is_session = paramiko.Transport.is_authenticated
+            if is_session:
+                # the data is in std_out
+                std_in, std_out, std_err = self.ssh.exec_command(SHELL_CODE)
+                exit_status = std_out.channel.recv_exit_status()
+                # if exit_status is 0, it means everything is ok
+                if exit_status == 0:
+                    out = ''.join(std_out.readlines())
+                    return str(out)
+                # if not, there is a problem.
+                else:
+                    err = ''.join(std_err.readlines())
+                    exit_status_error = std_err.recv_exit_status()
+                    connect_error_msg1 = 'Collect Error: %s' % str(err)
+                    connect_error_msg2 = 'stdError Return Code: %s' % str(exit_status_error)
+                    connect_error_msg3 = 'stdOut Return Code: %s' % str(exit_status)
+                    self.save_log(connect_error_msg1, connect_error_msg2)
+                    self.save_log(connect_error_msg1, connect_error_msg3)
             else:
-                err = ''.join(std_err.readlines())
-                exit_status_error = std_err.channel.recv_exit_status()
-                connect_error_msg1 = 'Collect Error: %s' % str(err)
-                connect_error_msg2 = 'stdError Return Code: %s' % str(exit_status_error)
-                connect_error_msg3 = 'stdOut Return Code: %s' % str(exit_status)
-                self.save_log(connect_error_msg1, connect_error_msg2)
-                self.save_log(connect_error_msg1, connect_error_msg3)
+                connect_error_msg1 = 'Session is not Active or not Authenticated'
+                connect_error_msg2 = is_session
+                self.ssh.close()
+                self.connect(0)
+
         except Exception as e:
             connect_error_msg1 = 'Collect Error:'
             connect_error_msg2 = str(e)
