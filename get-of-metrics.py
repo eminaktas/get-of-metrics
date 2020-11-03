@@ -70,23 +70,29 @@ class Collector(object):
         # "\s" matches any whitespace character (equal to [\r\n\t\f\v ]).
         # (?!word|word|..) matches the words in the set.
         regex = r"\s(?!mac|config|state|speed)(\w+)\s=\s([\w.]+)"
-        try:
-            matches = finditer(regex, data)
-        except:
+        if data != "None":
+            try:
+                matches = finditer(regex, data)
+            except:
+                connect_error_msg1 = 'Regex Error:'
+                self.save_log(connect_error_msg1, data)
+                self.log.info('%s %s' %(connect_error_msg1, data))
+            port = 'port'
+            for match in matches:
+                key = match.group(1)
+                value = match.group(2)
+                if key == 'index':
+                    port = 'port%s' % value
+                # otherwise, it writes the metrics in the .prom file
+                else:
+                    metrics[key].add_metric([self.alias_name, port], float(value))
+            for _ in metrics:
+                yield metrics[_]
+        else:
             connect_error_msg1 = 'Regex Error:'
             self.save_log(connect_error_msg1, data)
             self.log.info('%s %s' %(connect_error_msg1, data))
-        port = 'port'
-        for match in matches:
-            key = match.group(1)
-            value = match.group(2)
-            if key == 'index':
-                port = 'port%s' % value
-            # otherwise, it writes the metrics in the .prom file
-            else:
-                metrics[key].add_metric([self.alias_name, port], float(value))
-        for _ in metrics:
-            yield metrics[_]
+            pass
 
         # save_log, to record the error that occurs in the functions
     def save_log(self, err_msg1, err_msg2):
@@ -144,6 +150,10 @@ class GetMetrics:
     def connect(self, set_connect):
         status_code = 3
         try:
+            # in reconnection, close the session
+            if set_connect == 0:
+                self.ssh.close()
+            # connects to the server via ssh
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
             self.ssh.connect(self.ip, username=self.user_name, password=self.user_password)
         except paramiko.AuthenticationException:
@@ -203,15 +213,14 @@ class GetMetrics:
             else:
                 connect_error_msg1 = 'Session is not Active or not Authenticated'
                 connect_error_msg2 = is_session
-                self.ssh.close()
+                # reconnection
                 self.connect(0)
 
         except Exception as e:
             connect_error_msg1 = 'Collect Error:'
             connect_error_msg2 = str(e)
             self.save_log(connect_error_msg1, connect_error_msg2)
-            self.ssh.close()
-            # if connections losts, it will try to connect    
+            # reconnection
             self.connect(0)
 
     # save_log, to record the error that occurs in the functions
