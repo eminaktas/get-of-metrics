@@ -70,13 +70,10 @@ class Collector(object):
         # "\s" matches any whitespace character (equal to [\r\n\t\f\v ]).
         # (?!word|word|..) matches the words in the set.
         regex = r"\s(?!mac|config|state|speed)(\w+)\s=\s([\w.]+)"
-        if data != "None":
-            try:
-                matches = finditer(regex, data)
-            except:
-                connect_error_msg1 = 'Regex Error:'
-                self.save_log(connect_error_msg1, data)
-                self.log.info('%s %s' %(connect_error_msg1, data))
+        # logs the output data from switch
+        self.save_output()
+        try:
+            matches = finditer(regex, data)
             port = 'port'
             for match in matches:
                 key = match.group(1)
@@ -88,19 +85,27 @@ class Collector(object):
                     metrics[key].add_metric([self.alias_name, port], float(value))
             for _ in metrics:
                 yield metrics[_]
-        else:
+        except Exception as e:
             connect_error_msg1 = 'Regex Error:'
             self.save_log(connect_error_msg1, data)
-            self.log.info('%s %s' %(connect_error_msg1, data))
-            pass
+            self.save_log(connect_error_msg1, e)
+            self.log.info('%s %s' %(connect_error_msg1, e))
 
-        # save_log, to record the error that occurs in the functions
+    # save_log, to record the error that occurs in the functions
     def save_log(self, err_msg1, err_msg2):
         try:
             error_log_file = open('/var/log/get-of-metrics/logs/regex_errors_%s.log' % self.alias_name, 'a+')
             error_log_file.write('%s %s %s\n' % (str(datetime.now()), err_msg1, err_msg2))
         finally:
             error_log_file.close()
+
+    # save_output to record the last output from switch
+    def save_output(self):
+        try:
+            output_log_file = open('/var/log/get-of-metrics/logs/output_log_%s.log' % self.alias_name, 'w+')
+            output_log_file.write('%s:\n%s\n' % (str(datetime.now()), data))
+        finally:
+            output_log_file.close()
 
 # parse_args function allows us to control the script and get the parameters in commandline
 def parse_args():
@@ -152,6 +157,7 @@ class GetMetrics:
         try:
             # in reconnection, close the session
             if set_connect == 0:
+                self.log.info("Connection manually closed")
                 self.ssh.close()
             # connects to the server via ssh
             self.ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
@@ -192,26 +198,31 @@ class GetMetrics:
         SHELL_CODE = 'client_port_table_dump --stats'
         try:
             # checks if the session is still active and authenticated
-            is_session = paramiko.Transport.is_authenticated
-            if is_session:
-                # the data is in std_out
-                std_in, std_out, std_err = self.ssh.exec_command(SHELL_CODE)
-                exit_status = std_out.channel.recv_exit_status()
-                # if exit_status is 0, it means everything is ok
-                if exit_status == 0:
-                    out = ''.join(std_out.readlines())
-                    return str(out)
-                # if not, there is a problem.
+            if self.ssh.get_transport() is not None:
+                is_session = self.ssh.get_transport().is_active()
+                if is_session:
+                    # the data is in std_out
+                    std_in, std_out, std_err = self.ssh.exec_command(SHELL_CODE)
+                    exit_status = std_out.channel.recv_exit_status()
+                    # if exit_status is 0, it means everything is ok
+                    if exit_status == 0 and (out:= ''.join(std_out.readlines())) != "None": 
+                        return out
+                    # if not, there is a problem.
+                    else:
+                        err = ''.join(std_err.readlines())
+                        exit_status_error = std_err.recv_exit_status()
+                        connect_error_msg1 = 'Collect Error: %s' % str(err)
+                        connect_error_msg2 = 'stdError Return Code: %s' % str(exit_status_error)
+                        connect_error_msg3 = 'stdOut Return Code: %s' % str(exit_status)
+                        self.save_log(connect_error_msg1, connect_error_msg2)
+                        self.save_log(connect_error_msg1, connect_error_msg3)
                 else:
-                    err = ''.join(std_err.readlines())
-                    exit_status_error = std_err.recv_exit_status()
-                    connect_error_msg1 = 'Collect Error: %s' % str(err)
-                    connect_error_msg2 = 'stdError Return Code: %s' % str(exit_status_error)
-                    connect_error_msg3 = 'stdOut Return Code: %s' % str(exit_status)
-                    self.save_log(connect_error_msg1, connect_error_msg2)
-                    self.save_log(connect_error_msg1, connect_error_msg3)
+                    connect_error_msg1 = 'Session is not Active'
+                    connect_error_msg2 = is_session
+                    # reconnection
+                    self.connect(0)
             else:
-                connect_error_msg1 = 'Session is not Active or not Authenticated'
+                connect_error_msg1 = 'Session is not Active'
                 connect_error_msg2 = is_session
                 # reconnection
                 self.connect(0)
@@ -220,8 +231,7 @@ class GetMetrics:
             connect_error_msg1 = 'Collect Error:'
             connect_error_msg2 = str(e)
             self.save_log(connect_error_msg1, connect_error_msg2)
-            self.ssh.close()
-            # reconnection 
+            # reconnection
             self.connect(0)
 
     # save_log, to record the error that occurs in the functions
