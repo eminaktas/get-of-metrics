@@ -1,3 +1,12 @@
-systemctl stop get_of_metrics
-systemctl disable get_of_metrics
-echo "Service is disabled and service file has been removed"
+#!/bin/bash
+
+is_active=`systemctl is-active get-of-metrics`
+if [[ $is_active == "active" ]]
+then
+  systemctl stop get_of_metrics
+  systemctl disable get_of_metrics
+  rm /etc/systemd/system/get_of_metrics.service
+  echo "Service is disabled and service file has been removed"
+else
+  echo "Not active get-of-metrics service"
+fi

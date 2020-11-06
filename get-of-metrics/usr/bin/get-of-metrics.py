@@ -197,36 +197,20 @@ class GetMetrics:
     def collect(self, set_connect):
         SHELL_CODE = 'client_port_table_dump --stats'
         try:
-            # checks if the session is still active and authenticated
-            if self.ssh.get_transport() is not None:
-                is_session = self.ssh.get_transport().is_active()
-                if is_session:
-                    # the data is in std_out
-                    std_in, std_out, std_err = self.ssh.exec_command(SHELL_CODE)
-                    exit_status = std_out.channel.recv_exit_status()
-                    # if exit_status is 0, it means everything is ok
-                    if exit_status == 0 and (out:= ''.join(std_out.readlines())) != "None": 
-                        return out
-                    # if not, there is a problem.
-                    else:
-                        err = ''.join(std_err.readlines())
-                        exit_status_error = std_err.recv_exit_status()
-                        connect_error_msg1 = 'Collect Error: %s' % str(err)
-                        connect_error_msg2 = 'stdError Return Code: %s' % str(exit_status_error)
-                        connect_error_msg3 = 'stdOut Return Code: %s' % str(exit_status)
-                        self.save_log(connect_error_msg1, connect_error_msg2)
-                        self.save_log(connect_error_msg1, connect_error_msg3)
-                else:
-                    connect_error_msg1 = 'Session is not Active'
-                    connect_error_msg2 = is_session
-                    # reconnection
-                    self.connect(0)
+            # the data is in std_out
+            std_in, std_out, std_err = self.ssh.exec_command(SHELL_CODE, timeout=10)
+            # wait for the given time, and it is important that we have to put the delay here to get the data
+            # https://stackoverflow.com/a/32758464/14091937
+            sleep(self.delay_time)
+            # if exit_status is 0, it means command executed successfully
+            if (out := ''.join(std_out.readlines())) != "None": 
+                return out
+            # if not, there is a problem.
             else:
-                connect_error_msg1 = 'Session is not Active'
-                connect_error_msg2 = is_session
-                # reconnection
-                self.connect(0)
-
+                err = ''.join(std_err.readlines())
+                connect_error_msg1 = 'Collect Error: %s' % str(err)
+                connect_error_msg2 = 'stdError Return Code'
+                self.save_log(connect_error_msg1, connect_error_msg2)
         except Exception as e:
             connect_error_msg1 = 'Collect Error:'
             connect_error_msg2 = str(e)

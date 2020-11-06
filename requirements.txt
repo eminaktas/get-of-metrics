@@ -1,2 +1,2 @@
-paramiko==2.7.1
-prometheus_client==0.7.1
+paramiko
+prometheus_client

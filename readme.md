@@ -12,7 +12,7 @@ Use the secret.yml file to intruduce a remote machine and the delay time.
 
 ## Installation for only the script
 
-Python 3.7 and above need to be installed.
+Python 3.8 and above need to be installed.
 
 paramiko, re, threading, json, prometheus_client and time libraries are used in this script. json, re, threading and time are the standart libraries. prometheus_client, paramiko need to be installed.
 

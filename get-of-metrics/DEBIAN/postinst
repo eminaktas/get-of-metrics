@@ -1,0 +1,11 @@
+#!/bin/bash
+
+systemctl enable get-of-metrics
+systemctl start get-of-metrics
+is_active=`systemctl is-active get-of-metrics`
+if [[ $is_active == "active" ]];
+then
+  echo "Service is enabled, and running. You can see the logs with [journalctl -b -u get-of-metrics]"
+else
+  echo "Service is not enabled, and not running. You can see the logs with [journalctl -b -u get-of-metrics]"
+fi

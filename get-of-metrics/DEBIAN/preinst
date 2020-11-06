@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# To get the parameters from user during installation
+
+is_continue="y"
+
+while [ $is_continue == "y" ]
+do
+  valid_input="y"
+  alias_name=""
+  ip=""
+  username=""
+  userpswr=""
+  delay_time=""
+  while [ $is_continue == "y" ]
+  do
+      read -p "Enter parameters for remote host [alias_name host_name/ip username password]: " alias_name ip username userpswr
+      if [[ -z "$alias_name" ]] || [[ -z "$ip" ]] || [[ -z "$username" ]] || [[ -z "$userpswr" ]];
+      then
+        echo "Parameters are not optional,you must enter all parameters"
+      else
+        break
+      fi
+  done
+
+  valid_input="y"
+
+  read -p "Enter the delay time which is optional. You can press enter without giving parameter. [delay_time]: " delay_time_input
+  if [[ ! -z "$delay_time_input" ]];
+  then
+    delay_time="-t $delay_time_input"  
+  fi
+
+  echo "------------------------------"
+
+  service_text="[Unit]
+Description=get-of-metrics service. You can check logs with [systemctl status get-of-metrics]. You can also check the error logs at /var/log/get-of-metrics.	
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=60
+ExecStart=/usr/bin/python3 /usr/bin/get-of-metrics.py -a $alias_name -i $ip -u $username -p $userpswr $delay_time
+
+[Install]
+WantedBy=multi-user.target"
+
+  echo "$service_text"
+  echo "------------------------------"
+  while [ $valid_input == "y" ]
+  do
+    read -p "To start installation [y], To restart installation [n] or you can exit the installation [e]: " choice
+    case "$choice" in 
+      y|Y ) echo "Installation has been started"; echo "$service_text" > /etc/systemd/system/get-of-metrics.service; is_continue="n"; valid_input="n" break;;
+      n|N ) is_continue="y"; valid_input="n"; echo "Installation has been restarted"; break;;
+      e|E ) echo "Installation has been canceled"; exit 1;;
+      * ) echo "Invalid input";;
+    esac
+  done
+done
+exit 0
